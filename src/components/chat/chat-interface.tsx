@@ -113,6 +113,40 @@ function SuggestedQuestions({ questions, onSelect, disabled }: SuggestedQuestion
   );
 }
 
+interface FollowUpQuestionsProps {
+  questions: string[];
+  onSelect: (question: string) => void;
+  disabled?: boolean;
+}
+
+function FollowUpQuestions({ questions, onSelect, disabled }: FollowUpQuestionsProps) {
+  if (questions.length === 0) return null;
+
+  return (
+    <div className="space-y-3 mt-6 p-4 rounded-lg bg-gradient-to-r from-blue-50/50 to-purple-50/50 dark:from-blue-950/20 dark:to-purple-950/20 border border-blue-200/50 dark:border-blue-800/30">
+      <div className="flex items-center gap-2 text-sm font-medium text-blue-700 dark:text-blue-300">
+        <Lightbulb className="h-4 w-4" />
+        <span>Suggested follow-up questions:</span>
+      </div>
+      <div className="flex flex-wrap gap-2">
+        {questions.map((question, index) => (
+          <button
+            key={index}
+            onClick={() => onSelect(question)}
+            disabled={disabled}
+            className="px-4 py-2.5 text-sm font-medium rounded-full bg-white dark:bg-gray-800 border-2 border-blue-300 dark:border-blue-700 hover:border-blue-500 dark:hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-blue-950/50 text-gray-700 dark:text-gray-200 hover:text-blue-700 dark:hover:text-blue-300 transition-all duration-200 shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-[1.02] active:scale-[0.98]"
+          >
+            <span className="flex items-center gap-1.5">
+              <span className="text-blue-500 dark:text-blue-400">→</span>
+              {question}
+            </span>
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 interface ChatInterfaceProps {
   conversationId?: string;
   initialMessages?: ChatMessageType[];
@@ -121,6 +155,7 @@ interface ChatInterfaceProps {
 export function ChatInterface({ conversationId, initialMessages = [] }: ChatInterfaceProps) {
   const [message, setMessage] = useState('');
   const [messages, setMessages] = useState<ChatMessageType[]>(initialMessages);
+  const [followUpQuestions, setFollowUpQuestions] = useState<string[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   
   const {
@@ -148,10 +183,15 @@ export function ChatInterface({ conversationId, initialMessages = [] }: ChatInte
       const newMessage: ChatMessageType = {
         id: Date.now().toString(),
         role: 'assistant',
-        content: sendMessageResult.data.message,
-        timestamp: new Date().toISOString(),
+        content: sendMessageResult.data.response,
+        timestamp: sendMessageResult.data.timestamp || new Date().toISOString(),
       };
       setMessages(prev => [...prev, newMessage]);
+      
+      // Set follow-up questions if available
+      if (sendMessageResult.data.follow_up_questions) {
+        setFollowUpQuestions(sendMessageResult.data.follow_up_questions);
+      }
     }
   }, [sendMessageResult]);
 
@@ -160,10 +200,15 @@ export function ChatInterface({ conversationId, initialMessages = [] }: ChatInte
       const newMessage: ChatMessageType = {
         id: Date.now().toString(),
         role: 'assistant',
-        content: sendMessageNewConversationResult.data.message,
-        timestamp: new Date().toISOString(),
+        content: sendMessageNewConversationResult.data.response,
+        timestamp: sendMessageNewConversationResult.data.timestamp || new Date().toISOString(),
       };
       setMessages(prev => [...prev, newMessage]);
+      
+      // Set follow-up questions if available
+      if (sendMessageNewConversationResult.data.follow_up_questions) {
+        setFollowUpQuestions(sendMessageNewConversationResult.data.follow_up_questions);
+      }
     }
   }, [sendMessageNewConversationResult]);
 
@@ -180,6 +225,9 @@ export function ChatInterface({ conversationId, initialMessages = [] }: ChatInte
     setMessages(prev => [...prev, userMessage]);
     const currentMessage = message.trim();
     setMessage('');
+    
+    // Clear follow-up questions when sending a new message
+    setFollowUpQuestions([]);
 
     // Send message to API
     if (conversationId) {
@@ -189,7 +237,7 @@ export function ChatInterface({ conversationId, initialMessages = [] }: ChatInte
     }
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
+  const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSend();
@@ -198,6 +246,30 @@ export function ChatInterface({ conversationId, initialMessages = [] }: ChatInte
 
   const handleSuggestedQuestion = (question: string) => {
     setMessage(question);
+  };
+
+  const handleFollowUpQuestion = (question: string) => {
+    if (!question.trim() || isLoading) return;
+
+    const userMessage: ChatMessageType = {
+      id: Date.now().toString(),
+      role: 'user',
+      content: question.trim(),
+      timestamp: new Date().toISOString(),
+    };
+
+    setMessages(prev => [...prev, userMessage]);
+    setMessage('');
+    
+    // Clear follow-up questions when sending a new message
+    setFollowUpQuestions([]);
+
+    // Send message to API
+    if (conversationId) {
+      sendMessage({ conversationId, message: question.trim() });
+    } else {
+      sendMessageNewConversation(question.trim());
+    }
   };
 
   return (
@@ -232,6 +304,15 @@ export function ChatInterface({ conversationId, initialMessages = [] }: ChatInte
                 isLast={index === messages.length - 1}
               />
             ))}
+            
+            {/* Show follow-up questions after the last message if it's from assistant */}
+            {!isLoading && messages.length > 0 && messages[messages.length - 1].role === 'assistant' && (
+              <FollowUpQuestions
+                questions={followUpQuestions}
+                onSelect={handleFollowUpQuestion}
+                disabled={isLoading}
+              />
+            )}
           </>
         )}
 
@@ -261,7 +342,7 @@ export function ChatInterface({ conversationId, initialMessages = [] }: ChatInte
             <Input
               value={message}
               onChange={(e) => setMessage(e.target.value)}
-              onKeyPress={handleKeyPress}
+              onKeyDown={handleKeyDown}
               placeholder="Ask about your training, performance, or fitness goals..."
               disabled={isLoading}
               className="pr-4"

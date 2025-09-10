@@ -133,13 +133,13 @@ export default function ActivityDetailPage({ params }: ActivityDetailPageProps) 
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            {activity.distance > 0 && (
+            {activity.distance > 0 && activity.normalized && (
               <div className="text-center">
                 <div className="text-3xl font-bold text-primary mb-2">
-                  {activity.normalized.distance_km.toFixed(2)} km
+                  {activity.normalized.distance_km?.toFixed(2) || (activity.distance / 1000).toFixed(2)} km
                 </div>
                 <div className="text-sm text-muted-foreground mb-1">
-                  {activity.normalized.distance_miles.toFixed(2)} miles
+                  {activity.normalized.distance_miles?.toFixed(2) || (activity.distance / 1609.344).toFixed(2)} miles
                 </div>
                 <div className="text-sm text-muted-foreground">Distance</div>
               </div>
@@ -147,7 +147,7 @@ export default function ActivityDetailPage({ params }: ActivityDetailPageProps) 
             
             <div className="text-center">
               <div className="text-3xl font-bold text-primary mb-2">
-                {activity.normalized.duration_formatted}
+                {activity.normalized?.duration_formatted || `${Math.floor(activity.duration / 60)}:${String(Math.floor(activity.duration % 60)).padStart(2, '0')}`}
               </div>
               <div className="text-sm text-muted-foreground">Duration</div>
             </div>
@@ -155,15 +155,15 @@ export default function ActivityDetailPage({ params }: ActivityDetailPageProps) 
             {activity.average_speed > 0 && (
               <div className="text-center">
                 <div className="text-3xl font-bold text-primary mb-2">
-                  {isRunning && activity.normalized.average_pace_per_km
+                  {isRunning && activity.normalized?.average_pace_per_km
                     ? activity.normalized.average_pace_per_km
-                    : `${activity.normalized.average_speed_kmh.toFixed(1)} km/h`
+                    : `${activity.normalized?.average_speed_kmh?.toFixed(1) || (activity.average_speed * 3.6).toFixed(1)} km/h`
                   }
                 </div>
                 <div className="text-sm text-muted-foreground mb-1">
-                  {isRunning && activity.normalized.average_pace_per_mile
+                  {isRunning && activity.normalized?.average_pace_per_mile
                     ? `${activity.normalized.average_pace_per_mile} /mi`
-                    : `${activity.normalized.average_speed_mph.toFixed(1)} mph`
+                    : `${activity.normalized?.average_speed_mph?.toFixed(1) || (activity.average_speed * 2.237).toFixed(1)} mph`
                   }
                 </div>
                 <div className="text-sm text-muted-foreground">
@@ -195,7 +195,7 @@ export default function ActivityDetailPage({ params }: ActivityDetailPageProps) 
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            {activity.normalized.max_speed_kmh && (
+            {activity.normalized?.max_speed_kmh && (
               <div className="flex justify-between items-center">
                 <span className="text-sm text-muted-foreground">Max Speed</span>
                 <div className="text-right">
@@ -249,7 +249,7 @@ export default function ActivityDetailPage({ params }: ActivityDetailPageProps) 
                     {activity.elevation_gain}m
                   </div>
                   <div className="text-sm text-muted-foreground">
-                    {activity.normalized.elevation_gain_ft}ft
+                    {activity.normalized?.elevation_gain_ft || Math.round(activity.elevation_gain * 3.28084)}ft
                   </div>
                 </div>
               </div>

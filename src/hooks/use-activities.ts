@@ -68,11 +68,27 @@ export const useActivities = (params: UseActivitiesParams) => {
     });
   };
 
+  // Check sync status (replaces ingestion status check)
+  const useSyncStatus = () => {
+    return useQuery({
+      queryKey: ['activities', 'sync-status'],
+      queryFn: async () => {
+        const response = await activitiesApi.checkSyncStatus();
+        if (response.success && response.data) {
+          return response.data;
+        }
+        throw new Error(response.error?.message || 'Failed to check sync status');
+      },
+      staleTime: 1000 * 60 * 5, // Consider fresh for 5 minutes
+      refetchInterval: 1000 * 30, // Refetch every 30 seconds to catch new syncs
+    });
+  };
+
   // Delete activity mutation
   const deleteActivityMutation = useMutation({
     mutationFn: (activityId: string) => activitiesApi.deleteActivity(activityId),
     onSuccess: () => {
-      // Invalidate and refetch activities
+      // Invalidate and refetch activities and sync status
       queryClient.invalidateQueries({ queryKey: ['activities'] });
     },
   });
@@ -98,6 +114,7 @@ export const useActivities = (params: UseActivitiesParams) => {
     useActivity,
     useActivityStats,
     useActivityTypes,
+    useSyncStatus, // NEW: Replaces ingestion status check
 
     // Mutations
     deleteActivity: deleteActivityMutation.mutate,

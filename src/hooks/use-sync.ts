@@ -1,11 +1,51 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { syncApi } from '@/lib/sync-api';
-import { SyncRequest, SyncJob } from '@/types';
+import { SyncRequest, SyncJob, TaskStatus } from '@/types';
 
 export const useSync = () => {
   const queryClient = useQueryClient();
 
-  // Get sync jobs with pagination
+  // NEW: Get task status with polling (replaces useSyncJob)
+  const useTaskStatus = (taskId: string) => {
+    return useQuery({
+      queryKey: ['tasks', 'status', taskId],
+      queryFn: async () => {
+        const response = await syncApi.getTaskStatus(taskId);
+        if (response.success && response.data) {
+          return response.data;
+        }
+        throw new Error(response.error?.message || 'Failed to fetch task status');
+      },
+      enabled: !!taskId,
+      refetchInterval: (query) => {
+        // Refetch every 2 seconds if task is still running (as recommended)
+        if (query.state.data?.status === 'running' || query.state.data?.status === 'pending') {
+          return 2000;
+        }
+        return false;
+      },
+    });
+  };
+
+  // NEW: Get all tasks with pagination
+  const useTasks = (params?: {
+    task_type?: string;
+    page?: number;
+    page_size?: number;
+  }) => {
+    return useQuery({
+      queryKey: ['tasks', 'list', params],
+      queryFn: async () => {
+        const response = await syncApi.getTasks(params);
+        if (response.success && response.data) {
+          return response.data;
+        }
+        throw new Error(response.error?.message || 'Failed to fetch tasks');
+      },
+    });
+  };
+
+  // LEGACY: Get sync jobs with pagination (for backward compatibility)
   const useSyncJobs = (params?: {
     page?: number;
     limit?: number;
@@ -23,7 +63,7 @@ export const useSync = () => {
     });
   };
 
-  // Get a specific sync job
+  // LEGACY: Get a specific sync job (deprecated, use useTaskStatus)
   const useSyncJob = (jobId: string) => {
     return useQuery({
       queryKey: ['sync', 'job', jobId],
@@ -45,66 +85,78 @@ export const useSync = () => {
     });
   };
 
-  // Start sync mutation
+  // UPDATED: Start sync mutation (now returns task_id)
   const startSyncMutation = useMutation({
     mutationFn: (request: SyncRequest) => syncApi.startSync(request),
     onSuccess: (response) => {
       if (response.success) {
-        // Invalidate sync jobs query to refresh the list
+        // Invalidate tasks and sync jobs queries to refresh
+        queryClient.invalidateQueries({ queryKey: ['tasks'] });
         queryClient.invalidateQueries({ queryKey: ['sync', 'jobs'] });
+        
+        // Also invalidate ingestion status since sync now handles ingestion
+        queryClient.invalidateQueries({ queryKey: ['chat', 'ingestion', 'status'] });
       }
     },
   });
 
-  // Cancel sync mutation
+  // NEW: Delete all user data mutation
+  const deleteUserDataMutation = useMutation({
+    mutationFn: () => syncApi.deleteUserData(),
+    onSuccess: (response) => {
+      if (response.success) {
+        // Clear all related queries
+        queryClient.invalidateQueries({ queryKey: ['tasks'] });
+        queryClient.invalidateQueries({ queryKey: ['sync'] });
+        queryClient.invalidateQueries({ queryKey: ['chat'] });
+        queryClient.invalidateQueries({ queryKey: ['activities'] });
+      }
+    },
+  });
+
+  // DEPRECATED: These mutations no longer work with the new API
   const cancelSyncMutation = useMutation({
     mutationFn: (jobId: string) => syncApi.cancelSync(jobId),
-    onSuccess: (response, jobId) => {
-      if (response.success) {
-        // Invalidate queries related to the cancelled job
-        queryClient.invalidateQueries({ queryKey: ['sync', 'job', jobId] });
-        queryClient.invalidateQueries({ queryKey: ['sync', 'jobs'] });
-      }
+    onError: (error) => {
+      console.warn('cancelSync is deprecated:', error);
     },
   });
 
-  // Retry sync mutation
   const retrySyncMutation = useMutation({
     mutationFn: (jobId: string) => syncApi.retrySync(jobId),
-    onSuccess: (response, jobId) => {
-      if (response.success) {
-        // Invalidate queries to refresh the data
-        queryClient.invalidateQueries({ queryKey: ['sync', 'job', jobId] });
-        queryClient.invalidateQueries({ queryKey: ['sync', 'jobs'] });
-      }
+    onError: (error) => {
+      console.warn('retrySync is deprecated:', error);
     },
   });
 
-  // Delete sync job mutation
   const deleteSyncJobMutation = useMutation({
     mutationFn: (jobId: string) => syncApi.deleteSyncJob(jobId),
-    onSuccess: (response, jobId) => {
-      if (response.success) {
-        // Remove from cache and refresh list
-        queryClient.removeQueries({ queryKey: ['sync', 'job', jobId] });
-        queryClient.invalidateQueries({ queryKey: ['sync', 'jobs'] });
-      }
+    onError: (error) => {
+      console.warn('deleteSyncJob is deprecated:', error);
     },
   });
 
   return {
-    // Queries
+    // NEW: Primary queries for new task system
+    useTaskStatus,
+    useTasks,
+
+    // LEGACY: Queries for backward compatibility
     useSyncJobs,
     useSyncJob,
 
-    // Mutations
+    // PRIMARY: Mutations that work with new API
     startSync: startSyncMutation.mutate,
+    deleteUserData: deleteUserDataMutation.mutate,
+
+    // DEPRECATED: Mutations that no longer work (kept for compatibility)
     cancelSync: cancelSyncMutation.mutate,
     retrySync: retrySyncMutation.mutate,
     deleteSyncJob: deleteSyncJobMutation.mutate,
 
     // Loading states
     isStartingSyncLoading: startSyncMutation.isPending,
+    isDeletingUserDataLoading: deleteUserDataMutation.isPending,
     isCancellingSyncLoading: cancelSyncMutation.isPending,
     isRetryingSyncLoading: retrySyncMutation.isPending,
     isDeletingSyncLoading: deleteSyncJobMutation.isPending,
@@ -112,5 +164,7 @@ export const useSync = () => {
     // Mutation results
     startSyncResult: startSyncMutation.data,
     startSyncError: startSyncMutation.error,
+    deleteUserDataResult: deleteUserDataMutation.data,
+    deleteUserDataError: deleteUserDataMutation.error,
   };
 };

@@ -4,33 +4,23 @@ import { chatApi } from '@/lib/chat-api';
 export const useChat = () => {
   const queryClient = useQueryClient();
 
-  // Ingestion status query
+  // DEPRECATED: Ingestion status now uses activities endpoint for sync status check
   const useIngestionStatus = () => {
+    console.warn('useIngestionStatus is deprecated. Use useActivities().useSyncStatus() instead.');
     return useQuery({
       queryKey: ['chat', 'ingestion', 'status'],
       queryFn: async () => {
-        const response = await chatApi.getIngestionStatus();
-        if (response.success && response.data) {
-          return response.data;
-        }
-        throw new Error(response.error?.message || 'Failed to get ingestion status');
+        throw new Error('This endpoint is deprecated. Use activities endpoint to check sync status.');
       },
-      refetchInterval: (query) => {
-        // Refetch every 30 seconds if ingestion is in progress
-        if (query.state.data?.status === 'in_progress') {
-          return 30000;
-        }
-        return false;
-      },
+      enabled: false, // Disable this query
     });
   };
 
-  // Start ingestion mutation
+  // DEPRECATED: Ingestion is now handled by sync API
   const startIngestionMutation = useMutation({
     mutationFn: () => chatApi.startIngestion(),
-    onSuccess: () => {
-      // Invalidate ingestion status to refresh
-      queryClient.invalidateQueries({ queryKey: ['chat', 'ingestion', 'status'] });
+    onError: (error) => {
+      console.warn('startIngestion is deprecated. Use syncApi.startSync() instead:', error);
     },
   });
 

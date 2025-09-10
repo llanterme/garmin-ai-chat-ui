@@ -1,19 +1,47 @@
 import { apiClient, apiCall } from './api';
 import {
   SyncRequest,
+  SyncResponse,
+  TaskStatus,
+  TaskListResponse,
   SyncJob,
   ApiResponse,
 } from '@/types';
 
 export const syncApi = {
-  // Start activity sync (POST /sync/activities)
-  async startSync(request: SyncRequest): Promise<ApiResponse<{ sync_id: string; status: string; message: string }>> {
+  // NEW: Start unified sync + ingestion (POST /sync/activities)
+  async startSync(request: SyncRequest): Promise<ApiResponse<SyncResponse>> {
     return apiCall(
-      apiClient.post<{ sync_id: string; status: string; message: string }>('/sync/activities', request)
+      apiClient.post<SyncResponse>('/sync/activities', request)
     );
   },
 
-  // Get sync history (GET /sync/history) - replaces getSyncJobs
+  // NEW: Get task status by ID (GET /tasks/{task_id})
+  async getTaskStatus(taskId: string): Promise<ApiResponse<TaskStatus>> {
+    return apiCall(
+      apiClient.get<TaskStatus>(`/tasks/${taskId}`)
+    );
+  },
+
+  // NEW: List all tasks for user (GET /tasks)
+  async getTasks(params?: {
+    task_type?: string;
+    page?: number;
+    page_size?: number;
+  }): Promise<ApiResponse<TaskListResponse>> {
+    return apiCall(
+      apiClient.get<TaskListResponse>('/tasks', { params })
+    );
+  },
+
+  // NEW: Delete all user data (DELETE /auth/me/data)
+  async deleteUserData(): Promise<ApiResponse<{ message: string }>> {
+    return apiCall(
+      apiClient.delete<{ message: string }>('/auth/me/data')
+    );
+  },
+
+  // LEGACY: Get sync history (GET /sync/history) - keeping for backward compatibility
   async getSyncJobs(params?: {
     page?: number;
     limit?: number;
@@ -31,8 +59,9 @@ export const syncApi = {
     );
   },
 
-  // Get sync status by ID (GET /sync/status/{sync_id})
+  // DEPRECATED: Get sync status by ID - use getTaskStatus instead
   async getSyncJob(syncId: string): Promise<ApiResponse<SyncJob>> {
+    console.warn('getSyncJob is deprecated, use getTaskStatus instead');
     return apiCall(
       apiClient.get<SyncJob>(`/sync/status/${syncId}`)
     );
@@ -45,30 +74,19 @@ export const syncApi = {
     );
   },
 
-  // Note: The following methods may not exist in the backend based on Swagger analysis
-  // TODO: Verify if these are needed or implement differently
-
-  // Cancel sync - may not be available
+  // DEPRECATED: These endpoints no longer exist in the new API
   async cancelSync(jobId: string): Promise<ApiResponse<{ message: string }>> {
-    // This endpoint may not exist - need to check with backend
-    return apiCall(
-      apiClient.post<{ message: string }>(`/sync/cancel/${jobId}`)
-    );
+    console.warn('cancelSync endpoint no longer exists');
+    throw new Error('This endpoint has been removed. Tasks cannot be cancelled.');
   },
 
-  // Retry sync - may not be available  
   async retrySync(jobId: string): Promise<ApiResponse<SyncJob>> {
-    // This endpoint may not exist - need to check with backend
-    return apiCall(
-      apiClient.post<SyncJob>(`/sync/retry/${jobId}`)
-    );
+    console.warn('retrySync endpoint no longer exists, use startSync instead');
+    throw new Error('This endpoint has been removed. Use startSync with force_resync: true instead.');
   },
 
-  // Delete sync job - may not be available
   async deleteSyncJob(jobId: string): Promise<ApiResponse<{ message: string }>> {
-    // This endpoint may not exist - need to check with backend
-    return apiCall(
-      apiClient.delete<{ message: string }>(`/sync/history/${jobId}`)
-    );
+    console.warn('deleteSyncJob endpoint no longer exists');
+    throw new Error('This endpoint has been removed. Individual jobs cannot be deleted.');
   },
 };

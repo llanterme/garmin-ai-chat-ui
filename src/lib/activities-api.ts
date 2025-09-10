@@ -70,14 +70,42 @@ export const activitiesApi = {
   },
 
   // Get activity types for filtering
-  async getActivityTypes(): Promise<ApiResponse<Array<{
-    typeId: number;
-    typeKey: string;
-    displayName: string;
-    count: number;
-  }>>> {
+  async getActivityTypes(): Promise<ApiResponse<string[]>> {
     return apiCall(
-      apiClient.get('/activities/types/')
+      apiClient.get<string[]>('/activities/types/')
     );
+  },
+
+  // Check if user has synced activities (replaces ingestion status check)
+  async checkSyncStatus(): Promise<ApiResponse<{
+    hasSynced: boolean;
+    totalActivities: number;
+    mostRecentActivity: Activity | null;
+  }>> {
+    return apiCall(
+      apiClient.get<ActivityListResponse>('/activities/', { 
+        params: { page: 1, page_size: 1 } 
+      })
+    ).then(response => {
+      if (response.success && response.data) {
+        return {
+          success: true,
+          data: {
+            hasSynced: response.data.total > 0,
+            totalActivities: response.data.total,
+            mostRecentActivity: response.data.items[0] || null,
+          }
+        };
+      }
+      return {
+        success: false,
+        data: {
+          hasSynced: false,
+          totalActivities: 0,
+          mostRecentActivity: null,
+        },
+        error: response.error
+      };
+    });
   },
 };

@@ -5,6 +5,7 @@ import { Metadata } from 'next';
 import { Bot, MessageCircle, Database } from 'lucide-react';
 
 import { useChat } from '@/hooks/use-chat';
+import { useActivities } from '@/hooks/use-activities';
 import { IngestionStatus } from '@/components/chat/ingestion-status';
 import { ChatInterface } from '@/components/chat/chat-interface';
 import { Card, CardContent } from '@/components/ui/card';
@@ -17,26 +18,24 @@ enum ChatPhase {
 
 export default function ChatPage() {
   const [phase, setPhase] = useState<ChatPhase>(ChatPhase.CHECKING_STATUS);
-  const { useIngestionStatus } = useChat();
+  
+  // Use activities endpoint to check if user has synced data instead of deprecated ingestion status
+  const { useSyncStatus } = useActivities({ page: 1, limit: 1 });
+  const { data: syncStatus, isLoading } = useSyncStatus();
 
-  const { data: ingestionStatus, isLoading } = useIngestionStatus();
-
-  // Determine current phase based on ingestion status
+  // Determine current phase based on sync status (activities endpoint)
   const currentPhase = (() => {
     if (isLoading) return ChatPhase.CHECKING_STATUS;
     
-    if (!ingestionStatus) return ChatPhase.INGESTION_REQUIRED;
+    if (!syncStatus) return ChatPhase.INGESTION_REQUIRED;
     
-    switch (ingestionStatus.status) {
-      case 'completed':
-        return ChatPhase.CHAT_READY;
-      case 'not_started':
-      case 'in_progress':
-      case 'failed':
-        return ChatPhase.INGESTION_REQUIRED;
-      default:
-        return ChatPhase.INGESTION_REQUIRED;
+    // If user has synced activities, chat is ready
+    if (syncStatus.hasSynced) {
+      return ChatPhase.CHAT_READY;
     }
+    
+    // Otherwise, user needs to sync activities first
+    return ChatPhase.INGESTION_REQUIRED;
   })();
 
   const handleIngestionComplete = () => {

@@ -31,6 +31,13 @@ export const useAuth = () => {
       const response = await authApi.getCurrentUser();
       if (response.success && response.data) {
         setUser(response.data);
+        // Set garmin credentials status from user data
+        if (response.data.has_garmin_credentials !== undefined) {
+          setGarminCredentials({
+            hasCredentials: response.data.has_garmin_credentials,
+            lastUpdated: response.data.last_garmin_sync || undefined,
+          });
+        }
         return response.data;
       }
       throw new Error(response.error?.message || 'Failed to get user');

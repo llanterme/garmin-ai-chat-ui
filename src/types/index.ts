@@ -2,8 +2,15 @@
 export interface User {
   id: string;
   email: string;
-  createdAt: string;
-  updatedAt: string;
+  full_name?: string;
+  is_active?: boolean;
+  created_at: string;
+  updated_at: string;
+  last_login?: string;
+  last_garmin_sync?: string;
+  has_garmin_credentials?: boolean;
+  createdAt?: string; // Keep for backwards compatibility
+  updatedAt?: string; // Keep for backwards compatibility
 }
 
 export interface LoginCredentials {
@@ -58,7 +65,7 @@ export interface Activity {
   average_cadence?: number | null;
   max_cadence?: number | null;
   elevation_gain?: number | null;
-  normalized: {
+  normalized?: {
     duration_formatted: string;
     distance_km: number;
     distance_miles: number;
@@ -88,12 +95,58 @@ export interface ActivityListResponse {
   has_prev: boolean;
 }
 
-// Sync types
+// Sync types - Updated for unified sync + ingestion flow
 export interface SyncRequest {
-  startDate: string;
-  endDate: string;
+  days?: number; // Number of days to sync (1-365)
+  start_date?: string; // Alternative: specific start date
+  end_date?: string; // Alternative: specific end date
+  sync_type?: string; // Type of data to sync (default: "activities")
+  force_resync?: boolean; // Force re-sync even if already synced
+  force_reingest?: boolean; // NEW: Forces re-ingestion to Pinecone
+  batch_size?: number; // NEW: Batch size for Pinecone ingestion (1-50)
 }
 
+export interface SyncResponse {
+  task_id: string;
+  message: string;
+  status_url: string;
+}
+
+// New unified task system
+export interface TaskStatus {
+  task_id: string;
+  task_type: string;
+  task_name: string;
+  status: 'pending' | 'running' | 'completed' | 'failed';
+  progress_percentage: number; // 0-100
+  progress_message: string;
+  result_data?: TaskResultData;
+  error_message?: string;
+  created_at: string;
+  started_at?: string;
+  completed_at?: string;
+  duration_seconds?: number;
+}
+
+export interface TaskResultData {
+  status: string;
+  sync_id: string;
+  activities_in_date_range: number;
+  activities_synced: number;
+  activities_already_in_db: number;
+  activities_failed: number;
+  ingested_count: number;
+  vectorized_activities: number;
+}
+
+export interface TaskListResponse {
+  tasks: TaskStatus[];
+  total: number;
+  page: number;
+  page_size: number;
+}
+
+// Legacy types - keeping for backward compatibility during transition
 export interface SyncJob {
   id: string;
   status: 'pending' | 'running' | 'completed' | 'failed';
@@ -129,17 +182,20 @@ export interface ChatConversation {
 }
 
 export interface ChatResponse {
-  message: string;
-  conversationId: string;
-  suggestedQuestions?: string[];
+  response: string;
+  conversation_id: string;
+  follow_up_questions?: string[];
+  relevant_activities?: any[];
+  timestamp?: string;
+  activity_count?: number;
+  error?: string | null;
 }
 
 export interface IngestionStatus {
-  status: 'not_started' | 'in_progress' | 'completed' | 'failed';
-  totalActivities: number;
-  processedActivities: number;
-  estimatedTimeRemaining?: number;
-  lastUpdated: string;
+  database_activities: number;
+  vectorized_activities: number;
+  sync_needed: boolean;
+  sync_percentage: number;
 }
 
 // API Error types

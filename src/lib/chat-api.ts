@@ -8,18 +8,16 @@ import {
 } from '@/types';
 
 export const chatApi = {
-  // Check ingestion status
+  // DEPRECATED: Use activities endpoint instead to check sync status
   async getIngestionStatus(): Promise<ApiResponse<IngestionStatus>> {
-    return apiCall(
-      apiClient.get<IngestionStatus>('/chat/ingestion/status')
-    );
+    console.warn('getIngestionStatus is deprecated. Use activitiesApi.checkSyncStatus() instead.');
+    throw new Error('This endpoint has been removed. Use GET /api/v1/activities/?page=1&page_size=1 to check sync status instead.');
   },
 
-  // Start activity ingestion into vector database
+  // DEPRECATED: Ingestion is now handled by the sync API
   async startIngestion(): Promise<ApiResponse<{ message: string; jobId: string }>> {
-    return apiCall(
-      apiClient.post<{ message: string; jobId: string }>('/chat/ingestion/start')
-    );
+    console.warn('startIngestion is deprecated. Use syncApi.startSync() instead which handles both sync and ingestion.');
+    throw new Error('This endpoint has been removed. Use the unified sync flow via syncApi.startSync() instead.');
   },
 
   // Get all conversations
