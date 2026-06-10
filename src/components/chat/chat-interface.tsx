@@ -2,6 +2,9 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { format } from 'date-fns';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import rehypeHighlight from 'rehype-highlight';
 import { 
   Send, 
   Loader2, 
@@ -36,22 +39,46 @@ function ChatMessage({ message, isLast }: ChatMessageProps) {
   };
 
   return (
-    <div className={`flex gap-3 ${isUser ? 'justify-end' : 'justify-start'} ${isLast ? '' : 'mb-4'}`}>
+    <div className={`flex gap-3 ${isUser ? 'justify-end' : 'justify-start'} ${isLast ? '' : 'mb-4'} animate-in fade-in-0 slide-in-from-bottom-2 duration-300`}>
       {!isUser && (
-        <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
+        <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center flex-shrink-0 shadow-md">
           <Bot className="h-4 w-4 text-primary-foreground" />
         </div>
       )}
       
-      <div className={`max-w-[80%] ${isUser ? 'order-first' : ''}`}>
+      <div className={`max-w-[85%] md:max-w-[80%] ${isUser ? 'order-first' : ''}`}>
         <div
-          className={`rounded-2xl px-4 py-3 ${
+          className={`rounded-2xl px-4 py-3 shadow-sm transition-all hover:shadow-md ${
             isUser
               ? 'bg-primary text-primary-foreground'
-              : 'bg-muted text-foreground'
+              : 'bg-muted text-foreground border border-border/50'
           }`}
         >
-          <p className="text-sm leading-relaxed whitespace-pre-wrap">{message.content}</p>
+          {isUser ? (
+            <p className="text-sm leading-relaxed whitespace-pre-wrap">{message.content}</p>
+          ) : (
+            <div className="chat-markdown max-w-none">
+              <ReactMarkdown
+                remarkPlugins={[remarkGfm]}
+                rehypePlugins={[rehypeHighlight]}
+                components={{
+                  a: ({ children, href, ...props }) => (
+                    <a 
+                      href={href} 
+                      className="text-primary hover:text-primary/80 underline underline-offset-2 transition-colors" 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      {...props}
+                    >
+                      {children}
+                    </a>
+                  ),
+                }}
+              >
+                {message.content}
+              </ReactMarkdown>
+            </div>
+          )}
         </div>
         
         <div className={`flex items-center gap-2 mt-1 text-xs text-muted-foreground ${isUser ? 'justify-end' : 'justify-start'}`}>
@@ -74,7 +101,7 @@ function ChatMessage({ message, isLast }: ChatMessageProps) {
       </div>
 
       {isUser && (
-        <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
+        <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center flex-shrink-0 shadow-md border border-border/50">
           <User className="h-4 w-4 text-muted-foreground" />
         </div>
       )}
@@ -275,7 +302,8 @@ export function ChatInterface({ conversationId, initialMessages = [] }: ChatInte
   return (
     <div className="flex flex-col h-full">
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+      <div className="flex-1 overflow-y-auto p-4 scroll-smooth">
+        <div className="max-w-4xl mx-auto space-y-4">
         {messages.length === 0 ? (
           <div className="space-y-6">
             <div className="text-center py-8">
@@ -317,15 +345,20 @@ export function ChatInterface({ conversationId, initialMessages = [] }: ChatInte
         )}
 
         {isLoading && (
-          <div className="flex gap-3 justify-start">
-            <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
+          <div className="flex gap-3 justify-start animate-in fade-in-0 slide-in-from-bottom-2 duration-300">
+            <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center flex-shrink-0 shadow-md">
               <Bot className="h-4 w-4 text-primary-foreground" />
             </div>
-            <div className="max-w-[80%]">
-              <div className="rounded-2xl px-4 py-3 bg-muted text-foreground">
+            <div className="max-w-[85%] md:max-w-[80%]">
+              <div className="rounded-2xl px-4 py-3 bg-muted text-foreground border border-border/50 shadow-sm">
                 <div className="flex items-center gap-2">
-                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <Loader2 className="h-4 w-4 animate-spin text-primary" />
                   <span className="text-sm">Thinking...</span>
+                  <div className="flex gap-1 ml-1">
+                    <div className="w-1 h-1 bg-muted-foreground rounded-full animate-pulse" style={{ animationDelay: '0ms' }}></div>
+                    <div className="w-1 h-1 bg-muted-foreground rounded-full animate-pulse" style={{ animationDelay: '150ms' }}></div>
+                    <div className="w-1 h-1 bg-muted-foreground rounded-full animate-pulse" style={{ animationDelay: '300ms' }}></div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -333,11 +366,12 @@ export function ChatInterface({ conversationId, initialMessages = [] }: ChatInte
         )}
 
         <div ref={messagesEndRef} />
+        </div>
       </div>
 
       {/* Input */}
-      <div className="border-t border-border p-4">
-        <div className="flex gap-2">
+      <div className="border-t border-border p-4 bg-background/95 backdrop-blur-sm">
+        <div className="flex gap-2 max-w-4xl mx-auto">
           <div className="flex-1 relative">
             <Input
               value={message}
@@ -345,7 +379,7 @@ export function ChatInterface({ conversationId, initialMessages = [] }: ChatInte
               onKeyDown={handleKeyDown}
               placeholder="Ask about your training, performance, or fitness goals..."
               disabled={isLoading}
-              className="pr-4"
+              className="pr-4 focus:ring-2 focus:ring-primary/20"
             />
           </div>
           <Button

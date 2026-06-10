@@ -6,6 +6,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import {
   Activity,
   Bot,
+  Dumbbell,
   Home,
   LogOut,
   Menu,
@@ -43,6 +44,11 @@ const navigationItems = [
     name: 'AI Chat',
     href: '/chat',
     icon: Bot,
+  },
+  {
+    name: 'Workouts',
+    href: '/workouts',
+    icon: Dumbbell,
   },
 ];
 

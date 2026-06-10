@@ -226,3 +226,93 @@ export interface SortParams {
   field: string;
   direction: 'asc' | 'desc';
 }
+
+// Workout types
+export interface WorkoutRecommendation {
+  recommendationType: string;
+  durationMinutes: number;
+  intensityDescription: string;
+  reasoningSummary: string;
+  riskLevel: string;
+  confidence: number;
+}
+
+export interface WorkoutInterval {
+  description: string;
+  durationMinutes: number;
+  target: string;
+}
+
+export interface WorkoutSegment {
+  segment: string;
+  durationMinutes: number;
+  target: string;
+  intervals: WorkoutInterval[];
+}
+
+export interface WorkoutPlan {
+  sport: string;
+  recommendationType: string;
+  durationMinutes: number;
+  intensityDescription: string;
+  workoutStructure: WorkoutSegment[];
+  confidence: number;
+  performanceMetrics?: Record<string, unknown>;
+}
+
+export interface ZoneDistribution {
+  lowIntensityPercent: number;
+  moderatePercent: number;
+  highPercent: number;
+}
+
+export interface RunningMetrics {
+  thresholdPace?: string;
+  tempoPace?: string;
+  aerobicPace?: string;
+  easyPace?: string;
+  vo2maxPace?: string;
+}
+
+export interface CyclingMetrics {
+  ftpWatts?: number;
+  thresholdWatts?: number;
+  tempoWatts?: number;
+  aerobicWatts?: number;
+  easyWatts?: number;
+  vo2maxWatts?: number;
+}
+
+export interface PerformanceMetrics {
+  running?: RunningMetrics;
+  cycling?: CyclingMetrics;
+  runningSource?: string;
+  cyclingSource?: string;
+}
+
+export interface TrainingMetrics {
+  totalLoad7Days: number;
+  totalLoad28Days: number;
+  acuteChronicRatio: number;
+  hardSessions7Days: number;
+  daysSinceHardSession: number;
+  daysSinceRestDay: number | null;
+  daysSinceRecoveryDay: number | null;
+  avgAerobicEffect7Days: number;
+  zoneDistribution7Days: ZoneDistribution;
+  sportDistribution7Days: Record<string, number> | null;
+  performanceMetrics: PerformanceMetrics;
+}
+
+export interface RecommendationRequest {
+  daysBack?: number;
+  timezone?: string;
+}
+
+export interface WorkoutPlanRequest {
+  daysBack?: number;
+  timezone?: string;
+  sportOverride?: string;
+  durationOverride?: number;
+  recommendationTypeOverride?: string;
+}
