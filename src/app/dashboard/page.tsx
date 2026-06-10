@@ -1,6 +1,6 @@
 import { Metadata } from 'next';
 import Link from 'next/link';
-import { Activity, Bot, RefreshCw, Settings, ArrowRight } from 'lucide-react';
+import { Activity, Bot, Dumbbell, RefreshCw, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -10,6 +10,7 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { SyncJobsList } from '@/components/sync/sync-jobs-list';
+import { DashboardMetrics } from '@/components/dashboard/dashboard-metrics';
 
 export const metadata: Metadata = {
   title: 'Dashboard - Garmin AI Chat',
@@ -19,19 +20,33 @@ export const metadata: Metadata = {
 export default function DashboardPage() {
   return (
     <div className="max-w-7xl mx-auto space-y-8">
-      {/* Welcome Header */}
-      <div className="text-center space-y-4">
-        <h1 className="text-4xl font-bold text-foreground">
-          Welcome to Garmin AI Chat
-        </h1>
-        <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-          Your intelligent fitness companion is ready to analyze your training data
-          and provide personalized insights through natural language conversations.
-        </p>
-      </div>
+      <h1 className="text-2xl font-bold">Dashboard</h1>
+
+      {/* Live training metrics */}
+      <DashboardMetrics />
 
       {/* Quick Actions */}
-      <div className="grid md:grid-cols-3 gap-6">
+      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <Card className="hover:shadow-lg transition-shadow">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-3">
+              <Dumbbell className="h-6 w-6 text-primary" />
+              Workouts
+            </CardTitle>
+            <CardDescription>
+              Generate AI-powered workout recommendations and structured training plans.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button asChild className="w-full">
+              <Link href="/workouts">
+                Today&apos;s Workout
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Link>
+            </Button>
+          </CardContent>
+        </Card>
+
         <Card className="hover:shadow-lg transition-shadow">
           <CardHeader>
             <CardTitle className="flex items-center gap-3">
@@ -39,13 +54,13 @@ export default function DashboardPage() {
               Sync Activities
             </CardTitle>
             <CardDescription>
-              Connect and sync your Garmin Connect activities to start analyzing your fitness data.
+              Sync your Garmin Connect activities to keep your training data up to date.
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Button asChild className="w-full">
+            <Button asChild variant="outline" className="w-full">
               <Link href="/sync">
-                Start Sync
+                Sync Now
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Link>
             </Button>
@@ -56,10 +71,10 @@ export default function DashboardPage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-3">
               <Activity className="h-6 w-6 text-primary" />
-              View Activities
+              Activities
             </CardTitle>
             <CardDescription>
-              Browse and explore your synced activities with detailed metrics and insights.
+              Browse your synced activities with detailed metrics and performance data.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -79,7 +94,7 @@ export default function DashboardPage() {
               AI Chat
             </CardTitle>
             <CardDescription>
-              Ask questions about your training patterns and get intelligent insights from your data.
+              Ask questions about your training patterns and get intelligent insights.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -93,76 +108,9 @@ export default function DashboardPage() {
         </Card>
       </div>
 
-      {/* Getting Started Guide */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Getting Started</CardTitle>
-          <CardDescription>
-            Follow these steps to unlock the full potential of your fitness data
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid md:grid-cols-3 gap-6">
-            <div className="space-y-3">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-sm font-bold">
-                  1
-                </div>
-                <h3 className="font-semibold">Connect Garmin</h3>
-              </div>
-              <p className="text-sm text-muted-foreground">
-                Securely connect your Garmin Connect account with your credentials.
-              </p>
-              <Button asChild variant="outline" size="sm">
-                <Link href="/settings">
-                  <Settings className="mr-2 h-3 w-3" />
-                  Settings
-                </Link>
-              </Button>
-            </div>
-
-            <div className="space-y-3">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-sm font-bold">
-                  2
-                </div>
-                <h3 className="font-semibold">Sync Your Data</h3>
-              </div>
-              <p className="text-sm text-muted-foreground">
-                Choose your date range and sync activities from Garmin Connect.
-              </p>
-              <Button asChild variant="outline" size="sm">
-                <Link href="/sync">
-                  <RefreshCw className="mr-2 h-3 w-3" />
-                  Sync Now
-                </Link>
-              </Button>
-            </div>
-
-            <div className="space-y-3">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-sm font-bold">
-                  3
-                </div>
-                <h3 className="font-semibold">Start Chatting</h3>
-              </div>
-              <p className="text-sm text-muted-foreground">
-                Ask questions about your training and get AI-powered insights.
-              </p>
-              <Button asChild variant="outline" size="sm">
-                <Link href="/chat">
-                  <Bot className="mr-2 h-3 w-3" />
-                  AI Chat
-                </Link>
-              </Button>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
       {/* Recent Sync Activity */}
       <div className="space-y-4">
-        <h2 className="text-2xl font-bold text-foreground">Recent Sync Activity</h2>
+        <h2 className="text-xl font-semibold">Recent Sync Activity</h2>
         <SyncJobsList limit={3} showCreateNew={true} />
       </div>
     </div>

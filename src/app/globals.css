@@ -1,3 +1,6 @@
+@import url('https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css') layer(base);
+@import url('https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css') (prefers-color-scheme: dark);
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -46,6 +49,81 @@
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
     --ring: 224.3 76.3% 94.1%;
+  }
+}
+
+@layer components {
+  /* Custom chat message markdown styling */
+  .chat-markdown {
+    @apply text-sm leading-relaxed;
+  }
+  
+  .chat-markdown h1,
+  .chat-markdown h2,
+  .chat-markdown h3,
+  .chat-markdown h4,
+  .chat-markdown h5,
+  .chat-markdown h6 {
+    @apply font-semibold text-foreground mt-4 mb-2 first:mt-0;
+  }
+  
+  .chat-markdown h1 { @apply text-base; }
+  .chat-markdown h2 { @apply text-sm; }
+  .chat-markdown h3 { @apply text-sm; }
+  
+  .chat-markdown p {
+    @apply text-foreground mb-3 last:mb-0;
+  }
+  
+  .chat-markdown ul,
+  .chat-markdown ol {
+    @apply mb-3 ml-4 space-y-1;
+  }
+  
+  .chat-markdown li {
+    @apply text-foreground;
+  }
+  
+  .chat-markdown strong {
+    @apply font-semibold text-foreground;
+  }
+  
+  .chat-markdown em {
+    @apply italic text-foreground;
+  }
+  
+  .chat-markdown code:not(pre code) {
+    @apply bg-secondary text-foreground px-1.5 py-0.5 rounded text-xs font-mono border border-border;
+  }
+  
+  .chat-markdown pre {
+    @apply bg-secondary border border-border rounded-lg p-3 overflow-x-auto my-3;
+  }
+  
+  .chat-markdown pre code {
+    @apply text-xs font-mono bg-transparent border-0 p-0;
+  }
+  
+  .chat-markdown blockquote {
+    @apply border-l-4 border-primary/30 pl-4 italic text-muted-foreground my-3;
+  }
+  
+  .chat-markdown hr {
+    @apply border-border my-4;
+  }
+  
+  .chat-markdown a {
+    @apply text-primary hover:text-primary/80 underline underline-offset-2;
+  }
+  
+  /* Dark mode adjustments for highlight.js */
+  .dark .hljs {
+    @apply bg-secondary text-foreground;
+  }
+  
+  /* Ensure code blocks work well with our theme */
+  .chat-markdown .hljs {
+    @apply bg-secondary;
   }
 }
 
