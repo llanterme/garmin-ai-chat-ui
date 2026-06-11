@@ -43,7 +43,7 @@ export function LoginForm() {
           Welcome back
         </CardTitle>
         <CardDescription className="text-center">
-          Sign in to your Garmin AI Chat account
+          Sign in to your Athlete IQ account
         </CardDescription>
       </CardHeader>
       <CardContent>

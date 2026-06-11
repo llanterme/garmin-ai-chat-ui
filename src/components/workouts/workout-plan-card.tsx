@@ -45,7 +45,7 @@ export function WorkoutPlanCard({ plan }: WorkoutPlanCardProps) {
       <CardContent className="p-6 space-y-5">
         {/* Header */}
         <div className="flex items-baseline gap-2 flex-wrap">
-          <span className="text-lg font-bold uppercase tracking-wide">{plan.sport}</span>
+          <span className="text-lg font-bold font-display uppercase tracking-wide text-foreground">{plan.sport}</span>
           <span className="text-muted-foreground">·</span>
           <span className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
             {plan.recommendationType.replace(/_/g, ' ')}
@@ -78,7 +78,7 @@ export function WorkoutPlanCard({ plan }: WorkoutPlanCardProps) {
                     className="flex items-center gap-2 w-full text-left group"
                     onClick={() => setMainSetOpen(o => !o)}
                   >
-                    <span className="text-sm font-medium">{formatSegmentName(segment.segment)}</span>
+                    <span className="text-sm font-medium text-foreground">{formatSegmentName(segment.segment)}</span>
                     <span className="text-xs text-muted-foreground">· {segment.durationMinutes} min</span>
                     <span className="ml-auto text-xs text-muted-foreground group-hover:text-foreground transition-colors">
                       {mainSetOpen ? '▾' : '▸'}
@@ -108,7 +108,7 @@ export function WorkoutPlanCard({ plan }: WorkoutPlanCardProps) {
             return (
               <div key={si} className="flex items-center gap-2 text-sm">
                 <span className="w-1.5 h-1.5 rounded-full shrink-0 bg-slate-400" />
-                <span className="font-medium">{formatSegmentName(segment.segment)}</span>
+                <span className="font-medium text-foreground">{formatSegmentName(segment.segment)}</span>
                 <span className="text-muted-foreground">· {segment.durationMinutes} min</span>
                 {segment.target && (
                   <span className="text-xs text-muted-foreground ml-auto">{segment.target}</span>

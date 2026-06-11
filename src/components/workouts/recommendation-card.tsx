@@ -42,7 +42,7 @@ export function RecommendationCard({ recommendation }: RecommendationCardProps) 
         <div className="flex items-start justify-between gap-4">
           <div className="space-y-1">
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-sm font-semibold uppercase tracking-wide">
+              <span className="text-sm font-semibold uppercase tracking-wide text-foreground">
                 {recommendation.recommendationType.replace(/_/g, ' ')}
               </span>
               <span className="text-muted-foreground text-sm">·</span>

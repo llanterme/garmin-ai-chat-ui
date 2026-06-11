@@ -27,7 +27,7 @@ export default function SettingsPage() {
     <div className="max-w-4xl mx-auto space-y-8">
       {/* Page Header */}
       <div>
-        <h1 className="text-3xl font-bold text-foreground flex items-center gap-3">
+        <h1 className="text-3xl font-bold font-display text-foreground flex items-center gap-3">
           <Settings className="h-8 w-8" />
           Settings
         </h1>
@@ -74,14 +74,14 @@ export default function SettingsPage() {
         <CardContent>
           {garminCredentials?.hasCredentials ? (
             <div className="space-y-4">
-              <div className="bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800 rounded-lg p-4">
+              <div className="bg-emerald-950/30 border border-emerald-800/50 rounded-lg p-4">
                 <div className="flex items-center gap-3">
-                  <Shield className="h-5 w-5 text-green-600 dark:text-green-400" />
+                  <Shield className="h-5 w-5 text-emerald-400" />
                   <div>
-                    <p className="font-medium text-green-900 dark:text-green-100">
+                    <p className="font-medium text-emerald-100">
                       Garmin Account Connected
                     </p>
-                    <p className="text-sm text-green-700 dark:text-green-300">
+                    <p className="text-sm text-emerald-300">
                       Last updated: {garminCredentials.lastUpdated 
                         ? new Date(garminCredentials.lastUpdated).toLocaleDateString()
                         : 'Unknown'
@@ -98,13 +98,13 @@ export default function SettingsPage() {
 
               <div className="pt-4 border-t border-border">
                 <h4 className="font-medium mb-2">Test Connection</h4>
-                <div className="bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+                <div className="bg-secondary border border-border rounded-lg p-4">
                   <div className="flex items-start justify-between">
                     <div>
-                      <p className="font-medium text-blue-900 dark:text-blue-100 mb-1">
+                      <p className="font-medium text-foreground mb-1">
                         Test Garmin Connection
                       </p>
-                      <p className="text-sm text-blue-700 dark:text-blue-300">
+                      <p className="text-sm text-muted-foreground">
                         Verify that your Garmin Connect credentials are working properly.
                       </p>
                     </div>
@@ -124,14 +124,14 @@ export default function SettingsPage() {
             </div>
           ) : (
             <div className="space-y-4">
-              <div className="bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 rounded-lg p-4">
+              <div className="bg-amber-950/30 border border-amber-800/50 rounded-lg p-4">
                 <div className="flex items-center gap-3">
-                  <Shield className="h-5 w-5 text-amber-600 dark:text-amber-400" />
+                  <Shield className="h-5 w-5 text-amber-400" />
                   <div>
-                    <p className="font-medium text-amber-900 dark:text-amber-100">
+                    <p className="font-medium text-amber-100">
                       Garmin Account Not Connected
                     </p>
-                    <p className="text-sm text-amber-700 dark:text-amber-300">
+                    <p className="text-sm text-amber-300">
                       Connect your Garmin account to sync activities and enable AI analysis.
                     </p>
                   </div>

@@ -12,7 +12,7 @@ export default function ActivitiesPage() {
     <div className="max-w-7xl mx-auto space-y-8">
       {/* Page Header */}
       <div>
-        <h1 className="text-3xl font-bold text-foreground flex items-center gap-3">
+        <h1 className="text-3xl font-bold font-display text-foreground flex items-center gap-3">
           <Activity className="h-8 w-8" />
           Activities
         </h1>

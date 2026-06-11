@@ -20,15 +20,15 @@ export const metadata: Metadata = {
 export default function DashboardPage() {
   return (
     <div className="max-w-7xl mx-auto space-y-8">
-      <h1 className="text-2xl font-bold">Dashboard</h1>
+      <h1 className="text-2xl font-bold font-display">Dashboard</h1>
 
       {/* Live training metrics */}
       <DashboardMetrics />
 
       {/* Quick Actions */}
-      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        <Card className="hover:shadow-lg transition-shadow">
-          <CardHeader>
+      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 items-stretch">
+        <Card className="flex flex-col hover:shadow-lg transition-shadow">
+          <CardHeader className="flex-1">
             <CardTitle className="flex items-center gap-3">
               <Dumbbell className="h-6 w-6 text-primary" />
               Workouts
@@ -37,7 +37,7 @@ export default function DashboardPage() {
               Generate AI-powered workout recommendations and structured training plans.
             </CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="pt-0 mt-auto">
             <Button asChild className="w-full">
               <Link href="/workouts">
                 Today&apos;s Workout
@@ -47,8 +47,8 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
 
-        <Card className="hover:shadow-lg transition-shadow">
-          <CardHeader>
+        <Card className="flex flex-col hover:shadow-lg transition-shadow">
+          <CardHeader className="flex-1">
             <CardTitle className="flex items-center gap-3">
               <RefreshCw className="h-6 w-6 text-primary" />
               Sync Activities
@@ -57,7 +57,7 @@ export default function DashboardPage() {
               Sync your Garmin Connect activities to keep your training data up to date.
             </CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="pt-0 mt-auto">
             <Button asChild variant="outline" className="w-full">
               <Link href="/sync">
                 Sync Now
@@ -67,8 +67,8 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
 
-        <Card className="hover:shadow-lg transition-shadow">
-          <CardHeader>
+        <Card className="flex flex-col hover:shadow-lg transition-shadow">
+          <CardHeader className="flex-1">
             <CardTitle className="flex items-center gap-3">
               <Activity className="h-6 w-6 text-primary" />
               Activities
@@ -77,7 +77,7 @@ export default function DashboardPage() {
               Browse your synced activities with detailed metrics and performance data.
             </CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="pt-0 mt-auto">
             <Button asChild variant="outline" className="w-full">
               <Link href="/activities">
                 Browse Activities
@@ -87,8 +87,8 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
 
-        <Card className="hover:shadow-lg transition-shadow">
-          <CardHeader>
+        <Card className="flex flex-col hover:shadow-lg transition-shadow">
+          <CardHeader className="flex-1">
             <CardTitle className="flex items-center gap-3">
               <Bot className="h-6 w-6 text-primary" />
               AI Chat
@@ -97,7 +97,7 @@ export default function DashboardPage() {
               Ask questions about your training patterns and get intelligent insights.
             </CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="pt-0 mt-auto">
             <Button asChild variant="outline" className="w-full">
               <Link href="/chat">
                 Start Chatting

@@ -21,7 +21,7 @@ function MetricCell({ value, label, children }: { value?: React.ReactNode; label
   return (
     <div className="flex flex-col items-center gap-1 py-4 px-3">
       {children ?? (
-        <span className="text-3xl font-bold tabular-nums leading-none">{value}</span>
+        <span className="text-3xl font-bold font-display tabular-nums leading-none">{value}</span>
       )}
       <span className="text-xs uppercase tracking-wider text-muted-foreground mt-1">{label}</span>
     </div>
@@ -87,7 +87,7 @@ export function TrainingSnapshot() {
           <div className="flex-1 min-w-[80px]">
             <MetricCell label="ACR">
               <div className="flex items-center gap-2">
-                <span className={cn('text-3xl font-bold tabular-nums leading-none', acrColor(metrics.acuteChronicRatio))}>
+                <span className={cn('text-3xl font-bold font-display tabular-nums leading-none', acrColor(metrics.acuteChronicRatio))}>
                   {metrics.acuteChronicRatio.toFixed(2)}
                 </span>
                 <span className={cn('w-2.5 h-2.5 rounded-full flex-shrink-0', acrDotColor(metrics.acuteChronicRatio))} />
@@ -114,7 +114,7 @@ export function TrainingSnapshot() {
           {/* Days since rest */}
           <div className="flex-1 min-w-[80px]">
             <MetricCell label="Since Rest">
-              <span className={cn('text-3xl font-bold tabular-nums leading-none', restDaysColor)}>
+              <span className={cn('text-3xl font-bold font-display tabular-nums leading-none', restDaysColor)}>
                 {restDays === null ? '—' : `${restDays}d`}
               </span>
             </MetricCell>

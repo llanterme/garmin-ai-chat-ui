@@ -46,7 +46,7 @@ export default function ChatPage() {
     return (
       <div className="max-w-4xl mx-auto">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-foreground flex items-center gap-3">
+          <h1 className="text-3xl font-bold font-display text-foreground flex items-center gap-3">
             <Bot className="h-8 w-8" />
             AI Chat
           </h1>
@@ -71,7 +71,7 @@ export default function ChatPage() {
     return (
       <div className="max-w-4xl mx-auto">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-foreground flex items-center gap-3">
+          <h1 className="text-3xl font-bold font-display text-foreground flex items-center gap-3">
             <Bot className="h-8 w-8" />
             AI Chat Setup
           </h1>

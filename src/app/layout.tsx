@@ -12,29 +12,30 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: 'Garmin AI Chat - Intelligent Fitness Companion',
+  title: 'Athlete IQ - Training Intelligence',
   description:
-    'Transform your Garmin Connect activity data into personalized, conversational insights with AI-powered analysis.',
+    'AI-powered endurance training intelligence. Sync your Garmin data, compute training metrics, and get personalized workout recommendations.',
   keywords: [
     'Garmin',
-    'fitness',
-    'AI',
-    'chat',
-    'activity tracking',
-    'workout analysis',
+    'endurance training',
+    'AI coaching',
+    'training load',
+    'workout recommendations',
+    'FTP',
+    'pace zones',
   ],
-  authors: [{ name: 'Garmin AI Chat' }],
+  authors: [{ name: 'Athlete IQ' }],
   openGraph: {
-    title: 'Garmin AI Chat - Intelligent Fitness Companion',
+    title: 'Athlete IQ - Training Intelligence',
     description:
-      'Transform your Garmin Connect activity data into personalized, conversational insights with AI-powered analysis.',
+      'AI-powered endurance training intelligence. Sync your Garmin data, compute training metrics, and get personalized workout recommendations.',
     type: 'website',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Garmin AI Chat - Intelligent Fitness Companion',
+    title: 'Athlete IQ - Training Intelligence',
     description:
-      'Transform your Garmin Connect activity data into personalized, conversational insights with AI-powered analysis.',
+      'AI-powered endurance training intelligence. Sync your Garmin data, compute training metrics, and get personalized workout recommendations.',
   },
 };
 
@@ -44,7 +45,24 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" className="dark" suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{
+          __html: `
+            try {
+              var t = localStorage.getItem('athlete-iq-theme');
+              var h = document.documentElement;
+              if (t === 'light') {
+                h.classList.remove('dark');
+                h.classList.add('light');
+              } else {
+                h.classList.remove('light');
+                h.classList.add('dark');
+              }
+            } catch(e) {}
+          `
+        }} />
+      </head>
       <body className={`${inter.variable} font-sans antialiased`}>
         <QueryProvider>
           <AuthProvider>

@@ -13,7 +13,7 @@ export default function SyncPage() {
     <div className="max-w-7xl mx-auto space-y-8">
       {/* Page Header */}
       <div>
-        <h1 className="text-3xl font-bold text-foreground flex items-center gap-3">
+        <h1 className="text-3xl font-bold font-display text-foreground flex items-center gap-3">
           <RefreshCw className="h-8 w-8" />
           Activity Sync
         </h1>

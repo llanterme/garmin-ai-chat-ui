@@ -88,7 +88,7 @@ export function RegisterForm() {
           Create account
         </CardTitle>
         <CardDescription className="text-center">
-          Join Garmin AI Chat and start analyzing your fitness data
+          Join Athlete IQ and start analyzing your fitness data
         </CardDescription>
       </CardHeader>
       <CardContent>

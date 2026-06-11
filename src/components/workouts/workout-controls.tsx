@@ -49,7 +49,7 @@ export function WorkoutControls({
   };
 
   const selectClass =
-    'h-9 rounded-md border border-input bg-background px-3 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50';
+    'h-9 rounded-md border border-input bg-background text-foreground px-3 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50';
 
   return (
     <div className="space-y-4">

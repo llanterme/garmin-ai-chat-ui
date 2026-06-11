@@ -18,6 +18,7 @@ import {
 
 import { useAuth } from '@/hooks/use-auth';
 import { Button } from '@/components/ui/button';
+import { ThemeToggle } from '@/components/ui/theme-toggle';
 import { cn } from '@/lib/utils';
 
 interface NavigationProps {
@@ -70,9 +71,9 @@ export function Navigation({ className }: NavigationProps) {
           {/* Logo and brand */}
           <div className="flex items-center">
             <Link href="/" className="flex items-center space-x-2">
-              <Activity className="h-8 w-8 text-primary" />
-              <span className="text-xl font-bold text-foreground">
-                Garmin AI Chat
+              <Activity className="h-7 w-7 text-primary" />
+              <span className="text-lg font-bold text-foreground font-display tracking-tight">
+                Athlete IQ
               </span>
             </Link>
           </div>
@@ -101,6 +102,7 @@ export function Navigation({ className }: NavigationProps) {
 
               {/* User menu */}
               <div className="flex items-center space-x-2 ml-4 pl-4 border-l">
+                <ThemeToggle />
                 <span className="text-sm text-muted-foreground">
                   {user.email}
                 </span>
@@ -161,11 +163,14 @@ export function Navigation({ className }: NavigationProps) {
             })}
 
             <div className="border-t pt-4 mt-4">
-              <div className="flex items-center px-3 py-2">
-                <User className="h-5 w-5 text-muted-foreground mr-3" />
-                <span className="text-sm text-muted-foreground">
-                  {user.email}
-                </span>
+              <div className="flex items-center justify-between px-3 py-2">
+                <div className="flex items-center">
+                  <User className="h-5 w-5 text-muted-foreground mr-3" />
+                  <span className="text-sm text-muted-foreground">
+                    {user.email}
+                  </span>
+                </div>
+                <ThemeToggle />
               </div>
               <Button
                 variant="ghost"

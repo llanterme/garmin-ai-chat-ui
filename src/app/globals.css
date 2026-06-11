@@ -1,63 +1,88 @@
-@import url('https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css') layer(base);
-@import url('https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css') (prefers-color-scheme: dark);
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700;800&display=swap');
+@import url('https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css') layer(base);
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
+  /* Dark mode — DEFAULT (no class needed) */
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-    --primary: 221.2 83.2% 53.3%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96%;
-    --secondary-foreground: 222.2 84% 4.9%;
-    --muted: 210 40% 96%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 210 40% 96%;
-    --accent-foreground: 222.2 84% 4.9%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 221.2 83.2% 53.3%;
+    --background: 228 15% 7%;
+    --foreground: 228 8% 92%;
+    --card: 230 15% 12%;
+    --card-foreground: 228 8% 92%;
+    --popover: 230 15% 12%;
+    --popover-foreground: 228 8% 92%;
+    --primary: 160 84% 39%;
+    --primary-foreground: 228 15% 7%;
+    --secondary: 230 12% 18%;
+    --secondary-foreground: 228 8% 92%;
+    --muted: 230 12% 18%;
+    --muted-foreground: 232 8% 59%;
+    --accent: 230 12% 18%;
+    --accent-foreground: 228 8% 92%;
+    --destructive: 350 89% 60%;
+    --destructive-foreground: 228 8% 92%;
+    --border: 232 14% 19%;
+    --input: 232 14% 19%;
+    --ring: 160 84% 39%;
     --radius: 0.5rem;
   }
 
+  /* Light mode — activated by .light class on <html> */
+  .light {
+    --background: 220 14% 98%;
+    --foreground: 230 15% 13%;
+    --card: 0 0% 100%;
+    --card-foreground: 230 15% 13%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 230 15% 13%;
+    --primary: 160 90% 30%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 220 13% 95%;
+    --secondary-foreground: 230 15% 13%;
+    --muted: 220 13% 95%;
+    --muted-foreground: 230 10% 42%;
+    --accent: 220 13% 95%;
+    --accent-foreground: 230 15% 13%;
+    --destructive: 350 89% 60%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 220 13% 90%;
+    --input: 220 13% 90%;
+    --ring: 160 90% 30%;
+  }
+
+  /* .dark kept as alias so Tailwind dark: utilities continue to work */
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 217.2 91.2% 59.8%;
-    --primary-foreground: 222.2 84% 4.9%;
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 224.3 76.3% 94.1%;
+    --background: 228 15% 7%;
+    --foreground: 228 8% 92%;
+    --card: 230 15% 12%;
+    --card-foreground: 228 8% 92%;
+    --popover: 230 15% 12%;
+    --popover-foreground: 228 8% 92%;
+    --primary: 160 84% 39%;
+    --primary-foreground: 228 15% 7%;
+    --secondary: 230 12% 18%;
+    --secondary-foreground: 228 8% 92%;
+    --muted: 230 12% 18%;
+    --muted-foreground: 232 8% 59%;
+    --accent: 230 12% 18%;
+    --accent-foreground: 228 8% 92%;
+    --destructive: 350 89% 60%;
+    --destructive-foreground: 228 8% 92%;
+    --border: 232 14% 19%;
+    --input: 232 14% 19%;
+    --ring: 160 84% 39%;
   }
 }
 
 @layer components {
-  /* Custom chat message markdown styling */
+  /* Chat message markdown styling */
   .chat-markdown {
     @apply text-sm leading-relaxed;
   }
-  
+
   .chat-markdown h1,
   .chat-markdown h2,
   .chat-markdown h3,
@@ -66,64 +91,62 @@
   .chat-markdown h6 {
     @apply font-semibold text-foreground mt-4 mb-2 first:mt-0;
   }
-  
+
   .chat-markdown h1 { @apply text-base; }
   .chat-markdown h2 { @apply text-sm; }
   .chat-markdown h3 { @apply text-sm; }
-  
+
   .chat-markdown p {
     @apply text-foreground mb-3 last:mb-0;
   }
-  
+
   .chat-markdown ul,
   .chat-markdown ol {
     @apply mb-3 ml-4 space-y-1;
   }
-  
+
   .chat-markdown li {
     @apply text-foreground;
   }
-  
+
   .chat-markdown strong {
     @apply font-semibold text-foreground;
   }
-  
+
   .chat-markdown em {
     @apply italic text-foreground;
   }
-  
+
   .chat-markdown code:not(pre code) {
     @apply bg-secondary text-foreground px-1.5 py-0.5 rounded text-xs font-mono border border-border;
   }
-  
+
   .chat-markdown pre {
     @apply bg-secondary border border-border rounded-lg p-3 overflow-x-auto my-3;
   }
-  
+
   .chat-markdown pre code {
     @apply text-xs font-mono bg-transparent border-0 p-0;
   }
-  
+
   .chat-markdown blockquote {
     @apply border-l-4 border-primary/30 pl-4 italic text-muted-foreground my-3;
   }
-  
+
   .chat-markdown hr {
     @apply border-border my-4;
   }
-  
+
   .chat-markdown a {
     @apply text-primary hover:text-primary/80 underline underline-offset-2;
   }
-  
-  /* Dark mode adjustments for highlight.js */
-  .dark .hljs {
-    @apply bg-secondary text-foreground;
-  }
-  
-  /* Ensure code blocks work well with our theme */
+
   .chat-markdown .hljs {
     @apply bg-secondary;
   }
-}
 
+  /* Light mode: switch to the light highlight.js theme */
+  .light .chat-markdown pre {
+    background: hsl(220 13% 95%);
+  }
+}
