@@ -2,6 +2,20 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { workoutsApi } from '@/lib/workouts-api';
 import { RecommendationRequest, WorkoutPlanRequest } from '@/types';
 
+export const useTrainingTrends = (params?: { days?: number; timezone?: string }) => {
+  return useQuery({
+    queryKey: ['trends', params],
+    queryFn: async () => {
+      const response = await workoutsApi.getTrainingTrends(params);
+      if (response.success && response.data) {
+        return response.data;
+      }
+      throw new Error(response.error?.message || 'Failed to fetch trends');
+    },
+    staleTime: 1000 * 60 * 10,
+  });
+};
+
 export const useWorkouts = () => {
   const queryClient = useQueryClient();
 

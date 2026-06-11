@@ -12,6 +12,7 @@ import {
   Menu,
   Settings,
   RefreshCw,
+  TrendingUp,
   User,
   X,
 } from 'lucide-react';
@@ -50,6 +51,11 @@ const navigationItems = [
     name: 'Workouts',
     href: '/workouts',
     icon: Dumbbell,
+  },
+  {
+    name: 'Trends',
+    href: '/trends',
+    icon: TrendingUp,
   },
 ];
 
