@@ -92,12 +92,12 @@ export default function SettingsPage() {
               </div>
 
               <div className="space-y-3">
-                <h4 className="font-medium">Update Credentials</h4>
+                <h4 className="font-medium text-foreground">Update Credentials</h4>
                 <GarminCredentialsForm isUpdate={true} />
               </div>
 
               <div className="pt-4 border-t border-border">
-                <h4 className="font-medium mb-2">Test Connection</h4>
+                <h4 className="font-medium mb-2 text-foreground">Test Connection</h4>
                 <div className="bg-secondary border border-border rounded-lg p-4">
                   <div className="flex items-start justify-between">
                     <div>
@@ -155,7 +155,7 @@ export default function SettingsPage() {
         <CardContent>
           <div className="space-y-4 text-sm">
             <div>
-              <h4 className="font-medium mb-2">Data Storage</h4>
+              <h4 className="font-medium mb-2 text-foreground">Data Storage</h4>
               <p className="text-muted-foreground">
                 Your activity data is stored securely and encrypted. We only store the data 
                 necessary to provide AI insights about your fitness patterns and performance.
@@ -163,7 +163,7 @@ export default function SettingsPage() {
             </div>
             
             <div>
-              <h4 className="font-medium mb-2">Garmin Credentials</h4>
+              <h4 className="font-medium mb-2 text-foreground">Garmin Credentials</h4>
               <p className="text-muted-foreground">
                 Your Garmin Connect credentials are encrypted and stored securely. 
                 They are only used to sync your activity data and are never shared with third parties.
@@ -171,7 +171,7 @@ export default function SettingsPage() {
             </div>
             
             <div>
-              <h4 className="font-medium mb-2">AI Processing</h4>
+              <h4 className="font-medium mb-2 text-foreground">AI Processing</h4>
               <p className="text-muted-foreground">
                 When you use the AI chat feature, your activity data is processed to create embeddings 
                 that enable natural language queries. This processing happens securely and your 

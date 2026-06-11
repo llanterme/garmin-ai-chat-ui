@@ -85,7 +85,7 @@ export default function ChatPage() {
         {/* Information about what happens next */}
         <Card className="mt-6">
           <CardContent className="p-6">
-            <h3 className="font-medium mb-3">What happens during processing?</h3>
+            <h3 className="font-medium mb-3 text-foreground">What happens during processing?</h3>
             <div className="space-y-2 text-sm text-muted-foreground">
               <div className="flex items-start gap-3">
                 <div className="w-2 h-2 rounded-full bg-primary mt-2 flex-shrink-0"></div>

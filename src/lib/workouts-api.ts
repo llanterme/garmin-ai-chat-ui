@@ -3,6 +3,7 @@ import {
   WorkoutRecommendation,
   WorkoutPlan,
   TrainingMetrics,
+  TrendData,
   RecommendationRequest,
   WorkoutPlanRequest,
   ApiResponse,
@@ -46,6 +47,19 @@ export const workoutsApi = {
 
     return apiCall(
       apiClient.post<WorkoutPlan>('/workouts/plan', payload)
+    );
+  },
+
+  async getTrainingTrends(params?: {
+    days?: number;
+    timezone?: string;
+  }): Promise<ApiResponse<TrendData>> {
+    const queryParams: Record<string, unknown> = {};
+    if (params?.days) queryParams.days = params.days;
+    if (params?.timezone) queryParams.timezone = params.timezone;
+
+    return apiCall(
+      apiClient.get<TrendData>('/metrics/trends', { params: queryParams })
     );
   },
 };

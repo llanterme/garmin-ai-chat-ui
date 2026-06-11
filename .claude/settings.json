@@ -1,7 +1,9 @@
 {
   "permissions": {
     "allow": [
-      "Bash(npx tsc *)"
+      "Bash(npx tsc *)",
+      "Bash(node -e \"require\\('/Users/lukelanterme/Documents/Code/Personal/AI/Projects/garmin-ai-chat-ui/node_modules/recharts/package.json'\\).version\")",
+      "Bash(python3 -c \"import sys,json;print\\(json.load\\(sys.stdin\\)['version']\\)\")"
     ]
   }
 }

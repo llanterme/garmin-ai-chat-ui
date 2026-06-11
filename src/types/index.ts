@@ -316,3 +316,21 @@ export interface WorkoutPlanRequest {
   durationOverride?: number;
   recommendationTypeOverride?: string;
 }
+
+// Trends types
+export interface TrendDataPoint {
+  weekEnd: string;
+  weekStart: string;
+  totalLoad: number;
+  acr: number;
+  ftpWatts: number | null;
+  thresholdPace: string | null;
+  activityCount: number;
+}
+
+export interface TrendData {
+  startDate: string;
+  endDate: string;
+  days: number;
+  dataPoints: TrendDataPoint[];
+}

@@ -34,7 +34,7 @@ export default function HomePage() {
 
       {/* Features Section */}
       <div className="py-16">
-        <h2 className="text-3xl font-bold text-center mb-12">
+        <h2 className="text-3xl font-bold text-center mb-12 text-foreground">
           Intelligent Fitness Analysis
         </h2>
         <div className="grid md:grid-cols-3 gap-6">
@@ -73,7 +73,7 @@ export default function HomePage() {
       {/* How It Works Section */}
       <div className="py-16 bg-muted/50 rounded-lg">
         <div className="px-8">
-          <h2 className="text-3xl font-bold text-center mb-12">
+          <h2 className="text-3xl font-bold text-center mb-12 text-foreground">
             How It Works
           </h2>
           <div className="grid md:grid-cols-3 gap-8">
@@ -81,7 +81,7 @@ export default function HomePage() {
               <div className="w-16 h-16 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-2xl font-bold mx-auto">
                 1
               </div>
-              <h3 className="text-xl font-semibold">Connect Garmin</h3>
+              <h3 className="text-xl font-semibold text-foreground">Connect Garmin</h3>
               <p className="text-muted-foreground">
                 Securely connect your Garmin Connect account to sync your activity data.
               </p>
@@ -91,7 +91,7 @@ export default function HomePage() {
               <div className="w-16 h-16 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-2xl font-bold mx-auto">
                 2
               </div>
-              <h3 className="text-xl font-semibold">Sync Activities</h3>
+              <h3 className="text-xl font-semibold text-foreground">Sync Activities</h3>
               <p className="text-muted-foreground">
                 Choose your date range and watch as your activities are processed and analyzed.
               </p>
@@ -101,7 +101,7 @@ export default function HomePage() {
               <div className="w-16 h-16 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-2xl font-bold mx-auto">
                 3
               </div>
-              <h3 className="text-xl font-semibold">Chat & Analyze</h3>
+              <h3 className="text-xl font-semibold text-foreground">Chat & Analyze</h3>
               <p className="text-muted-foreground">
                 Start asking questions about your training and get intelligent insights instantly.
               </p>
@@ -112,7 +112,7 @@ export default function HomePage() {
 
       {/* CTA Section */}
       <div className="py-16 text-center">
-        <h2 className="text-3xl font-bold mb-4">
+        <h2 className="text-3xl font-bold mb-4 text-foreground">
           Ready to unlock your fitness insights?
         </h2>
         <p className="text-xl text-muted-foreground mb-8">

@@ -20,7 +20,7 @@ export const metadata: Metadata = {
 export default function DashboardPage() {
   return (
     <div className="max-w-7xl mx-auto space-y-8">
-      <h1 className="text-2xl font-bold font-display">Dashboard</h1>
+      <h1 className="text-2xl font-bold font-display text-foreground">Dashboard</h1>
 
       {/* Live training metrics */}
       <DashboardMetrics />
@@ -110,7 +110,7 @@ export default function DashboardPage() {
 
       {/* Recent Sync Activity */}
       <div className="space-y-4">
-        <h2 className="text-xl font-semibold">Recent Sync Activity</h2>
+        <h2 className="text-xl font-semibold text-foreground">Recent Sync Activity</h2>
         <SyncJobsList limit={3} showCreateNew={true} />
       </div>
     </div>
