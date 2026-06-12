@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { workoutsApi } from '@/lib/workouts-api';
-import { RecommendationRequest, WorkoutPlanRequest } from '@/types';
+import { RecommendationRequest, WorkoutPlanRequest, WeeklyPlanRequest } from '@/types';
 
 export const useTrainingTrends = (params?: { days?: number; timezone?: string }) => {
   return useQuery({
@@ -53,6 +53,16 @@ export const useWorkouts = () => {
     },
   });
 
+  const weeklyPlanMutation = useMutation({
+    mutationFn: async (request?: WeeklyPlanRequest) => {
+      const response = await workoutsApi.getWeeklyPlan(request);
+      if (response.success && response.data) {
+        return response.data;
+      }
+      throw new Error(response.error?.message || 'Failed to generate weekly plan');
+    },
+  });
+
   // Suppress unused variable warning — queryClient is kept for future cache invalidation
   void queryClient;
 
@@ -73,5 +83,12 @@ export const useWorkouts = () => {
     isGeneratingPlan: workoutPlanMutation.isPending,
     planError: workoutPlanMutation.error,
     resetPlan: workoutPlanMutation.reset,
+
+    generateWeeklyPlan: weeklyPlanMutation.mutate,
+    generateWeeklyPlanAsync: weeklyPlanMutation.mutateAsync,
+    weeklyPlan: weeklyPlanMutation.data,
+    isGeneratingWeeklyPlan: weeklyPlanMutation.isPending,
+    weeklyPlanError: weeklyPlanMutation.error,
+    resetWeeklyPlan: weeklyPlanMutation.reset,
   };
 };

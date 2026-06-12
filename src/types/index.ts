@@ -317,6 +317,31 @@ export interface WorkoutPlanRequest {
   recommendationTypeOverride?: string;
 }
 
+// Weekly Plan types
+export interface DailyPlan {
+  date: string;
+  dayNumber: number;
+  sport: string;
+  recommendationType: string;
+  durationMinutes: number;
+  intensityDescription: string;
+  workoutStructure: WorkoutSegment[];
+  confidence: number;
+  rationale: string;
+}
+
+export interface WeeklyPlan {
+  weekStart: string;
+  weekEnd: string;
+  days: DailyPlan[];
+  performanceMetrics?: Record<string, unknown>;
+}
+
+export interface WeeklyPlanRequest {
+  daysBack?: number;
+  timezone?: string;
+}
+
 // Trends types
 export interface TrendDataPoint {
   weekEnd: string;

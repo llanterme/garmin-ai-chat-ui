@@ -2,10 +2,12 @@ import { apiClient, apiCall } from './api';
 import {
   WorkoutRecommendation,
   WorkoutPlan,
+  WeeklyPlan,
   TrainingMetrics,
   TrendData,
   RecommendationRequest,
   WorkoutPlanRequest,
+  WeeklyPlanRequest,
   ApiResponse,
 } from '@/types';
 
@@ -60,6 +62,17 @@ export const workoutsApi = {
 
     return apiCall(
       apiClient.get<TrendData>('/metrics/trends', { params: queryParams })
+    );
+  },
+
+  async getWeeklyPlan(
+    request?: WeeklyPlanRequest
+  ): Promise<ApiResponse<WeeklyPlan>> {
+    return apiCall(
+      apiClient.post<WeeklyPlan>('/workouts/weekly-plan', {
+        daysBack: request?.daysBack ?? 14,
+        timezone: request?.timezone ?? 'Africa/Johannesburg',
+      }, { timeout: 120000 })
     );
   },
 };

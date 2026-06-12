@@ -1,13 +1,19 @@
 'use client';
 
+import { useState } from 'react';
 import { useWorkouts } from '@/hooks/use-workouts';
 import { TrainingSnapshot } from '@/components/workouts/training-snapshot';
 import { RecommendationCard } from '@/components/workouts/recommendation-card';
 import { WorkoutPlanCard } from '@/components/workouts/workout-plan-card';
 import { WorkoutControls } from '@/components/workouts/workout-controls';
+import { ViewToggle } from '@/components/workouts/view-toggle';
+import { WeeklyPlanView } from '@/components/workouts/weekly-plan-view';
 import { WorkoutPlanRequest } from '@/types';
+import { cn } from '@/lib/utils';
 
 export default function WorkoutsPage() {
+  const [view, setView] = useState<'today' | 'weekly'>('today');
+
   const {
     useTrainingMetrics,
     generateRecommendationAsync,
@@ -43,7 +49,7 @@ export default function WorkoutsPage() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6 py-2">
+    <div className={cn('mx-auto space-y-6 py-2', view === 'weekly' ? 'max-w-6xl' : 'max-w-4xl')}>
       {/* Page header */}
       <div>
         <h1 className="text-2xl font-bold font-display tracking-tight text-foreground">Today&apos;s Training</h1>
@@ -55,36 +61,45 @@ export default function WorkoutsPage() {
       {/* Training snapshot */}
       <TrainingSnapshot />
 
-      {/* Controls */}
-      <WorkoutControls
-        onGenerateRecommendation={handleGenerateRecommendation}
-        onGenerateWorkoutPlan={handleGenerateWorkoutPlan}
-        isGeneratingRecommendation={isGeneratingRecommendation}
-        isGeneratingPlan={isGeneratingPlan}
-        hasRecommendation={!!recommendation}
-      />
+      {/* View toggle */}
+      <ViewToggle view={view} onViewChange={setView} />
 
-      {/* Errors */}
-      {recommendationError && (
-        <p className="text-sm text-muted-foreground">
-          {recommendationError.message.includes('502') || recommendationError.message.includes('503')
-            ? 'Workout service unavailable — make sure garmin-adapter is running.'
-            : `Could not generate recommendation: ${recommendationError.message}`}
-        </p>
+      {view === 'today' ? (
+        <>
+          {/* Controls */}
+          <WorkoutControls
+            onGenerateRecommendation={handleGenerateRecommendation}
+            onGenerateWorkoutPlan={handleGenerateWorkoutPlan}
+            isGeneratingRecommendation={isGeneratingRecommendation}
+            isGeneratingPlan={isGeneratingPlan}
+            hasRecommendation={!!recommendation}
+          />
+
+          {/* Errors */}
+          {recommendationError && (
+            <p className="text-sm text-muted-foreground">
+              {recommendationError.message.includes('502') || recommendationError.message.includes('503')
+                ? 'Workout service unavailable — make sure garmin-adapter is running.'
+                : `Could not generate recommendation: ${recommendationError.message}`}
+            </p>
+          )}
+          {planError && (
+            <p className="text-sm text-muted-foreground">
+              {planError.message.includes('502') || planError.message.includes('503')
+                ? 'Workout service unavailable — make sure garmin-adapter is running.'
+                : `Could not generate workout plan: ${planError.message}`}
+            </p>
+          )}
+
+          {/* Recommendation */}
+          {recommendation && <RecommendationCard recommendation={recommendation} />}
+
+          {/* Workout plan */}
+          {workoutPlan && <WorkoutPlanCard plan={workoutPlan} />}
+        </>
+      ) : (
+        <WeeklyPlanView />
       )}
-      {planError && (
-        <p className="text-sm text-muted-foreground">
-          {planError.message.includes('502') || planError.message.includes('503')
-            ? 'Workout service unavailable — make sure garmin-adapter is running.'
-            : `Could not generate workout plan: ${planError.message}`}
-        </p>
-      )}
-
-      {/* Recommendation */}
-      {recommendation && <RecommendationCard recommendation={recommendation} />}
-
-      {/* Workout plan */}
-      {workoutPlan && <WorkoutPlanCard plan={workoutPlan} />}
     </div>
   );
 }
