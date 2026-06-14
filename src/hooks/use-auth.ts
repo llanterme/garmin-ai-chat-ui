@@ -11,27 +11,26 @@ export const useAuth = () => {
   const queryClient = useQueryClient();
   const {
     user,
-    tokens,
+    isAuthenticated,
     garminCredentials,
     isLoading,
     error,
     setUser,
-    setTokens,
+    setAuthenticated,
     setGarminCredentials,
     setLoading,
     setError,
     logout: authLogout,
-    initializeAuth,
   } = useAuthStore();
 
-  // Get current user query
+  // Check authentication status via /auth/me — relies on HttpOnly cookie
   const { data: currentUser, refetch: refetchUser } = useQuery({
     queryKey: ['auth', 'me'],
     queryFn: async () => {
       const response = await authApi.getCurrentUser();
       if (response.success && response.data) {
         setUser(response.data);
-        // Set garmin credentials status from user data
+        setAuthenticated(true);
         if (response.data.has_garmin_credentials !== undefined) {
           setGarminCredentials({
             hasCredentials: response.data.has_garmin_credentials,
@@ -40,10 +39,16 @@ export const useAuth = () => {
         }
         return response.data;
       }
-      throw new Error(response.error?.message || 'Failed to get user');
+      // 401 or any failure means the user is not logged in — set unauthenticated state
+      // and return null instead of throwing so the error doesn't bubble up
+      setAuthenticated(false);
+      setUser(null);
+      return null;
     },
-    enabled: !!tokens?.accessToken,
+    // Always attempt the check on mount — the cookie determines auth status
+    // Never retry on failure — 401 from /auth/me is definitive
     retry: false,
+    staleTime: 5 * 60 * 1000, // 5 minutes
   });
 
   // Test Garmin credentials (optional - not automatically called)
@@ -60,7 +65,7 @@ export const useAuth = () => {
     }
   };
 
-  // Login mutation
+  // Login mutation — backend sets HttpOnly cookies, no token handling needed
   const loginMutation = useMutation({
     mutationFn: async (credentials: LoginCredentials) => {
       const response = await authApi.login(credentials);
@@ -76,14 +81,11 @@ export const useAuth = () => {
     onSuccess: (response) => {
       setLoading(false);
       if (response.success && response.data) {
-        // If user data is provided, set it; otherwise fetch it
+        // If user data is included in the login response, set it directly
         if (response.data.user) {
           setUser(response.data.user);
         }
-        setTokens({
-          accessToken: response.data.access_token,
-          refreshToken: response.data.refresh_token,
-        });
+        setAuthenticated(true);
         queryClient.invalidateQueries({ queryKey: ['auth'] });
       }
     },
@@ -94,7 +96,7 @@ export const useAuth = () => {
     },
   });
 
-  // Register mutation
+  // Register mutation — backend sets HttpOnly cookies, no token handling needed
   const registerMutation = useMutation({
     mutationFn: async (credentials: RegisterCredentials) => {
       const response = await authApi.register(credentials);
@@ -110,14 +112,10 @@ export const useAuth = () => {
     onSuccess: (response) => {
       setLoading(false);
       if (response.success && response.data) {
-        // If user data is provided, set it; otherwise fetch it
         if (response.data.user) {
           setUser(response.data.user);
         }
-        setTokens({
-          accessToken: response.data.access_token,
-          refreshToken: response.data.refresh_token,
-        });
+        setAuthenticated(true);
         queryClient.invalidateQueries({ queryKey: ['auth'] });
       }
     },
@@ -128,10 +126,15 @@ export const useAuth = () => {
     },
   });
 
-  // Logout mutation
+  // Logout mutation — calls server to clear HttpOnly cookies
   const logoutMutation = useMutation({
     mutationFn: () => authApi.logout(),
     onSuccess: () => {
+      authLogout();
+      queryClient.clear();
+    },
+    onError: () => {
+      // Even if the server call fails, clear local state
       authLogout();
       queryClient.clear();
     },
@@ -143,7 +146,6 @@ export const useAuth = () => {
       authApi.setGarminCredentials(credentials),
     onSuccess: (response) => {
       if (response.success) {
-        // Mark as having credentials in local state
         setGarminCredentials({ hasCredentials: true, lastUpdated: new Date().toISOString() });
       }
     },
@@ -154,7 +156,6 @@ export const useAuth = () => {
       authApi.updateGarminCredentials(credentials),
     onSuccess: (response) => {
       if (response.success) {
-        // Update local state
         setGarminCredentials({ hasCredentials: true, lastUpdated: new Date().toISOString() });
       }
     },
@@ -163,7 +164,7 @@ export const useAuth = () => {
   return {
     // State
     user: user || currentUser,
-    tokens,
+    isAuthenticated,
     garminCredentials,
     isLoading: isLoading || loginMutation.isPending || registerMutation.isPending,
     error,
@@ -172,7 +173,6 @@ export const useAuth = () => {
     login: loginMutation.mutate,
     register: registerMutation.mutate,
     logout: logoutMutation.mutate,
-    initializeAuth,
     refetchUser,
 
     // Garmin credentials

@@ -23,11 +23,6 @@ export interface RegisterCredentials {
   password: string;
 }
 
-export interface AuthTokens {
-  accessToken: string;
-  refreshToken: string;
-}
-
 export interface AuthResponse {
   access_token: string;
   refresh_token: string;

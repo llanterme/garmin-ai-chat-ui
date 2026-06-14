@@ -5,7 +5,6 @@ import {
   AuthResponse,
   User,
   GarminCredentials,
-  GarminCredentialsStatus,
   ApiResponse,
 } from '@/types';
 
@@ -39,14 +38,6 @@ export const authApi = {
   async logout(): Promise<ApiResponse<{ message: string }>> {
     return apiCall(
       apiClient.post<{ message: string }>('/auth/logout')
-    );
-  },
-
-  async refreshToken(refreshToken: string): Promise<ApiResponse<{ access_token: string }>> {
-    return apiCall(
-      apiClient.post<{ access_token: string }>('/auth/refresh', {
-        refresh_token: refreshToken,
-      })
     );
   },
 
