@@ -6,6 +6,7 @@ import { TrainingSnapshot } from '@/components/workouts/training-snapshot';
 import { useWorkouts } from '@/hooks/use-workouts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { AskAiLink } from '@/components/ui/ask-ai-link';
 
 function ZoneRow({ label, value }: { label: string; value?: string }) {
   if (!value) return null;
@@ -136,7 +137,10 @@ export function DashboardMetrics() {
       {(isLoading || hasZones) && (
         <Card>
           <CardHeader className="pb-3 pt-4 px-5">
-            <CardTitle className="text-sm font-medium">Performance Zones</CardTitle>
+            <div className="flex items-center gap-2">
+              <CardTitle className="text-sm font-medium">Performance Zones</CardTitle>
+              <AskAiLink query="What do my training zones mean and how should I use them?" />
+            </div>
           </CardHeader>
           <CardContent className="px-5 pb-4">
             {isLoading ? (
