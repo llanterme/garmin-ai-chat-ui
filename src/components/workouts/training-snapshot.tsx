@@ -4,6 +4,7 @@ import { useWorkouts } from '@/hooks/use-workouts';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { AskAiLink } from '@/components/ui/ask-ai-link';
 
 function acrColor(acr: number): string {
   if (acr > 1.3) return 'text-red-500';
@@ -17,13 +18,21 @@ function acrDotColor(acr: number): string {
   return 'bg-emerald-500';
 }
 
-function MetricCell({ value, label, children }: { value?: React.ReactNode; label: string; children?: React.ReactNode }) {
+function MetricCell({ value, label, children, askQuery }: {
+  value?: React.ReactNode;
+  label: string;
+  children?: React.ReactNode;
+  askQuery?: string;
+}) {
   return (
-    <div className="flex flex-col items-center gap-1 py-4 px-3">
+    <div className="flex flex-col items-center gap-1 py-4 px-3 relative group">
       {children ?? (
         <span className="text-3xl font-bold font-display tabular-nums leading-none">{value}</span>
       )}
-      <span className="text-xs uppercase tracking-wider text-muted-foreground mt-1">{label}</span>
+      <div className="flex items-center gap-1">
+        <span className="text-xs uppercase tracking-wider text-muted-foreground mt-1">{label}</span>
+        {askQuery && <AskAiLink query={askQuery} className="mt-1" />}
+      </div>
     </div>
   );
 }
@@ -85,7 +94,7 @@ export function TrainingSnapshot() {
         <div className="flex items-stretch divide-x divide-border overflow-x-auto">
           {/* ACR */}
           <div className="flex-1 min-w-[80px]">
-            <MetricCell label="ACR">
+            <MetricCell label="ACR" askQuery={`What does my ACR of ${metrics.acuteChronicRatio.toFixed(2)} mean for my training?`}>
               <div className="flex items-center gap-2">
                 <span className={cn('text-3xl font-bold font-display tabular-nums leading-none', acrColor(metrics.acuteChronicRatio))}>
                   {metrics.acuteChronicRatio.toFixed(2)}
@@ -99,21 +108,21 @@ export function TrainingSnapshot() {
 
           {/* 7d Load */}
           <div className="flex-1 min-w-[80px]">
-            <MetricCell value={Math.round(metrics.totalLoad7Days)} label="7d Load" />
+            <MetricCell value={Math.round(metrics.totalLoad7Days)} label="7d Load" askQuery={`What does my 7-day training load of ${Math.round(metrics.totalLoad7Days)} mean?`} />
           </div>
 
           {divider}
 
           {/* Hard sessions */}
           <div className="flex-1 min-w-[80px]">
-            <MetricCell value={metrics.hardSessions7Days} label="Hard" />
+            <MetricCell value={metrics.hardSessions7Days} label="Hard" askQuery={`I've done ${metrics.hardSessions7Days} hard sessions this week. Is that too many?`} />
           </div>
 
           {divider}
 
           {/* Days since rest */}
           <div className="flex-1 min-w-[80px]">
-            <MetricCell label="Since Rest">
+            <MetricCell label="Since Rest" askQuery={restDays !== null ? `It's been ${restDays} days since my last rest day. Should I rest?` : undefined}>
               <span className={cn('text-3xl font-bold font-display tabular-nums leading-none', restDaysColor)}>
                 {restDays === null ? '—' : `${restDays}d`}
               </span>
@@ -127,6 +136,7 @@ export function TrainingSnapshot() {
             <MetricCell
               value={`${metrics.daysSinceHardSession}d`}
               label="Since Hard"
+              askQuery={`It's been ${metrics.daysSinceHardSession} days since my last hard session. Am I ready for intensity?`}
             />
           </div>
 
@@ -134,7 +144,7 @@ export function TrainingSnapshot() {
 
           {/* Zone distribution */}
           <div className="flex-1 min-w-[100px]">
-            <MetricCell label="Zones L/M/H">
+            <MetricCell label="Zones L/M/H" askQuery="What does my zone distribution mean and is it balanced?">
               <div className="flex flex-col gap-1.5 w-full px-2">
                 <div className="flex items-center gap-1.5">
                   <div className="flex-1 h-1.5 rounded-full bg-muted overflow-hidden">
