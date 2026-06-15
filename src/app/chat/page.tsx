@@ -108,7 +108,7 @@ export default function ChatPage() {
 
   // ChatPhase.CHAT_READY
   return (
-    <div className="max-w-6xl mx-auto h-[calc(100vh-200px)] flex flex-col">
+    <div className="max-w-6xl mx-auto h-[calc(100vh-180px)] flex flex-col min-h-0">
       <div className="mb-6">
         <h1 className="text-3xl font-bold text-foreground flex items-center gap-3">
           <MessageCircle className="h-8 w-8" />
@@ -119,7 +119,7 @@ export default function ChatPage() {
         </p>
       </div>
 
-      <Card className="flex-1 flex flex-col">
+      <Card className="flex-1 flex flex-col overflow-hidden p-0 min-h-0">
         <ChatInterface />
       </Card>
     </div>

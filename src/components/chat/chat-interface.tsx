@@ -1,27 +1,28 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { format } from 'date-fns';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeHighlight from 'rehype-highlight';
-import { 
-  Send, 
-  Loader2, 
-  Bot, 
-  User, 
+import {
+  Send,
+  Loader2,
+  Bot,
+  User,
   MessageCircle,
   Lightbulb,
   Copy,
   Check,
 } from 'lucide-react';
 
-import { useChat } from '@/hooks/use-chat';
+import { useChat, useSendChatMessage } from '@/hooks/use-chat';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { ChatMessage as ChatMessageType } from '@/types';
+import { ChatMessage as ChatMessageType, ChatResponse } from '@/types';
 
 interface ChatMessageProps {
   message: ChatMessageType;
@@ -45,7 +46,7 @@ function ChatMessage({ message, isLast }: ChatMessageProps) {
           <Bot className="h-4 w-4 text-primary-foreground" />
         </div>
       )}
-      
+
       <div className={`max-w-[85%] md:max-w-[80%] ${isUser ? 'order-first' : ''}`}>
         <div
           className={`rounded-2xl px-4 py-3 shadow-sm transition-all hover:shadow-md ${
@@ -63,10 +64,10 @@ function ChatMessage({ message, isLast }: ChatMessageProps) {
                 rehypePlugins={[rehypeHighlight]}
                 components={{
                   a: ({ children, href, ...props }) => (
-                    <a 
-                      href={href} 
-                      className="text-primary hover:text-primary/80 underline underline-offset-2 transition-colors" 
-                      target="_blank" 
+                    <a
+                      href={href}
+                      className="text-primary hover:text-primary/80 underline underline-offset-2 transition-colors"
+                      target="_blank"
                       rel="noopener noreferrer"
                       {...props}
                     >
@@ -80,7 +81,7 @@ function ChatMessage({ message, isLast }: ChatMessageProps) {
             </div>
           )}
         </div>
-        
+
         <div className={`flex items-center gap-2 mt-1 text-xs text-muted-foreground ${isUser ? 'justify-end' : 'justify-start'}`}>
           <span>{format(new Date(message.timestamp), 'h:mm a')}</span>
           {!isUser && (
@@ -174,6 +175,32 @@ function FollowUpQuestions({ questions, onSelect, disabled }: FollowUpQuestionsP
   );
 }
 
+// Module-scoped guard — survives Suspense remounts and React Strict Mode
+// double-invocations. Keyed by query string so each unique prefilled query
+// fires exactly once per page session.
+const autoSentQueries = new Set<string>();
+
+interface AutoSendProps {
+  onSend: (query: string) => void;
+}
+
+function AutoSendFromQueryParam({ onSend }: AutoSendProps) {
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    const prefilledQuery = searchParams.get('query');
+    if (!prefilledQuery) return;
+    if (autoSentQueries.has(prefilledQuery)) return;
+
+    autoSentQueries.add(prefilledQuery);
+    window.history.replaceState({}, '', '/chat');
+    onSend(prefilledQuery);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  return null;
+}
+
 interface ChatInterfaceProps {
   conversationId?: string;
   initialMessages?: ChatMessageType[];
@@ -184,84 +211,75 @@ export function ChatInterface({ conversationId, initialMessages = [] }: ChatInte
   const [messages, setMessages] = useState<ChatMessageType[]>(initialMessages);
   const [followUpQuestions, setFollowUpQuestions] = useState<string[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  
-  const {
-    sendMessage,
-    sendMessageNewConversation,
-    isSendingMessage,
-    isSendingMessageNewConversation,
-    sendMessageResult,
-    sendMessageNewConversationResult,
-    useSuggestedQuestions,
-  } = useChat();
 
+  const [isSending, setIsSending] = useState(false);
+  const { useSuggestedQuestions } = useChat();
+  const { sendChatMessage } = useSendChatMessage();
   const { data: suggestedQuestions = [] } = useSuggestedQuestions();
-
-  const isLoading = isSendingMessage || isSendingMessageNewConversation;
 
   // Scroll to bottom when messages change
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+  }, [messages, isSending]);
 
-  // Update messages when new message results come in
-  useEffect(() => {
-    if (sendMessageResult?.success && sendMessageResult.data) {
-      const newMessage: ChatMessageType = {
-        id: Date.now().toString(),
-        role: 'assistant',
-        content: sendMessageResult.data.response,
-        timestamp: sendMessageResult.data.timestamp || new Date().toISOString(),
-      };
-      setMessages(prev => [...prev, newMessage]);
-      
-      // Set follow-up questions if available
-      if (sendMessageResult.data.follow_up_questions) {
-        setFollowUpQuestions(sendMessageResult.data.follow_up_questions);
-      }
-    }
-  }, [sendMessageResult]);
+  // Append an assistant message + follow-ups when a response arrives.
+  const handleResult = useCallback((response: ChatResponse) => {
+    const assistantMessage: ChatMessageType = {
+      id: `assistant-${Date.now()}`,
+      role: 'assistant',
+      content: response.response,
+      timestamp: response.timestamp || new Date().toISOString(),
+    };
+    setMessages((prev) => [...prev, assistantMessage]);
+    setFollowUpQuestions(response.follow_up_questions ?? []);
+    setIsSending(false);
+  }, []);
 
-  useEffect(() => {
-    if (sendMessageNewConversationResult?.success && sendMessageNewConversationResult.data) {
-      const newMessage: ChatMessageType = {
-        id: Date.now().toString(),
-        role: 'assistant',
-        content: sendMessageNewConversationResult.data.response,
-        timestamp: sendMessageNewConversationResult.data.timestamp || new Date().toISOString(),
-      };
-      setMessages(prev => [...prev, newMessage]);
-      
-      // Set follow-up questions if available
-      if (sendMessageNewConversationResult.data.follow_up_questions) {
-        setFollowUpQuestions(sendMessageNewConversationResult.data.follow_up_questions);
-      }
-    }
-  }, [sendMessageNewConversationResult]);
-
-  const handleSend = async () => {
-    if (!message.trim() || isLoading) return;
-
-    const userMessage: ChatMessageType = {
-      id: Date.now().toString(),
-      role: 'user',
-      content: message.trim(),
+  // Append a friendly error message when the request fails.
+  const handleFailure = useCallback((errorMessage: string) => {
+    const failureMessage: ChatMessageType = {
+      id: `error-${Date.now()}`,
+      role: 'assistant',
+      content:
+        "Sorry, I couldn't complete that request. Workout-related questions can take 20-30 seconds — please try again. " +
+        `(${errorMessage})`,
       timestamp: new Date().toISOString(),
     };
+    setMessages((prev) => [...prev, failureMessage]);
+    setIsSending(false);
+  }, []);
 
-    setMessages(prev => [...prev, userMessage]);
+  // Single send path used by manual input, suggestions, follow-ups, and auto-send.
+  const handleSendMessage = useCallback(
+    (text: string) => {
+      const trimmed = text.trim();
+      if (!trimmed) return;
+
+      const userMessage: ChatMessageType = {
+        id: `user-${Date.now()}`,
+        role: 'user',
+        content: trimmed,
+        timestamp: new Date().toISOString(),
+      };
+      setMessages((prev) => [...prev, userMessage]);
+      setFollowUpQuestions([]);
+      setIsSending(true);
+
+      sendChatMessage({
+        message: trimmed,
+        conversationId,
+        onResult: handleResult,
+        onFailure: handleFailure,
+      });
+    },
+    [sendChatMessage, conversationId, handleResult, handleFailure]
+  );
+
+  const handleSend = () => {
+    if (!message.trim() || isSending) return;
     const currentMessage = message.trim();
     setMessage('');
-    
-    // Clear follow-up questions when sending a new message
-    setFollowUpQuestions([]);
-
-    // Send message to API
-    if (conversationId) {
-      sendMessage({ conversationId, message: currentMessage });
-    } else {
-      sendMessageNewConversation(currentMessage);
-    }
+    handleSendMessage(currentMessage);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -276,41 +294,24 @@ export function ChatInterface({ conversationId, initialMessages = [] }: ChatInte
   };
 
   const handleFollowUpQuestion = (question: string) => {
-    if (!question.trim() || isLoading) return;
-
-    const userMessage: ChatMessageType = {
-      id: Date.now().toString(),
-      role: 'user',
-      content: question.trim(),
-      timestamp: new Date().toISOString(),
-    };
-
-    setMessages(prev => [...prev, userMessage]);
     setMessage('');
-    
-    // Clear follow-up questions when sending a new message
-    setFollowUpQuestions([]);
-
-    // Send message to API
-    if (conversationId) {
-      sendMessage({ conversationId, message: question.trim() });
-    } else {
-      sendMessageNewConversation(question.trim());
-    }
+    handleSendMessage(question);
   };
 
   return (
     <div className="flex flex-col h-full">
+      {/* Auto-send prefilled query from URL param */}
+      <AutoSendFromQueryParam onSend={handleSendMessage} />
       {/* Messages */}
       <div className="flex-1 overflow-y-auto p-4 scroll-smooth">
         <div className="max-w-4xl mx-auto space-y-4">
-        {messages.length === 0 ? (
+        {messages.length === 0 && !isSending ? (
           <div className="space-y-6">
             <div className="text-center py-8">
               <MessageCircle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-              <h3 className="text-lg font-medium mb-2">Start a conversation</h3>
+              <h3 className="text-lg font-medium mb-2 text-foreground">Start a conversation</h3>
               <p className="text-muted-foreground text-sm max-w-md mx-auto">
-                Ask questions about your training data, performance trends, or get insights 
+                Ask questions about your training data, performance trends, or get insights
                 about your fitness journey.
               </p>
             </div>
@@ -319,7 +320,7 @@ export function ChatInterface({ conversationId, initialMessages = [] }: ChatInte
               <SuggestedQuestions
                 questions={suggestedQuestions}
                 onSelect={handleSuggestedQuestion}
-                disabled={isLoading}
+                disabled={isSending}
               />
             )}
           </div>
@@ -332,19 +333,19 @@ export function ChatInterface({ conversationId, initialMessages = [] }: ChatInte
                 isLast={index === messages.length - 1}
               />
             ))}
-            
+
             {/* Show follow-up questions after the last message if it's from assistant */}
-            {!isLoading && messages.length > 0 && messages[messages.length - 1].role === 'assistant' && (
+            {!isSending && messages.length > 0 && messages[messages.length - 1].role === 'assistant' && (
               <FollowUpQuestions
                 questions={followUpQuestions}
                 onSelect={handleFollowUpQuestion}
-                disabled={isLoading}
+                disabled={isSending}
               />
             )}
           </>
         )}
 
-        {isLoading && (
+        {isSending && (
           <div className="flex gap-3 justify-start animate-in fade-in-0 slide-in-from-bottom-2 duration-300">
             <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center flex-shrink-0 shadow-md">
               <Bot className="h-4 w-4 text-primary-foreground" />
@@ -378,16 +379,16 @@ export function ChatInterface({ conversationId, initialMessages = [] }: ChatInte
               onChange={(e) => setMessage(e.target.value)}
               onKeyDown={handleKeyDown}
               placeholder="Ask about your training, performance, or fitness goals..."
-              disabled={isLoading}
+              disabled={isSending}
               className="pr-4 focus:ring-2 focus:ring-primary/20"
             />
           </div>
           <Button
             onClick={handleSend}
-            disabled={!message.trim() || isLoading}
+            disabled={!message.trim() || isSending}
             size="icon"
           >
-            {isLoading ? (
+            {isSending ? (
               <Loader2 className="h-4 w-4 animate-spin" />
             ) : (
               <Send className="h-4 w-4" />

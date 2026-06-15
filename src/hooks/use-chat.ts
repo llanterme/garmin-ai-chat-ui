@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { chatApi } from '@/lib/chat-api';
+import { ChatResponse, ApiResponse } from '@/types';
 
 export const useChat = () => {
   const queryClient = useQueryClient();
@@ -75,33 +76,6 @@ export const useChat = () => {
     },
   });
 
-  // Send message mutation (works with or without conversation ID)
-  const sendMessageMutation = useMutation({
-    mutationFn: ({ conversationId, message, options }: { 
-      conversationId?: string; 
-      message: string; 
-      options?: { search_limit?: number; include_follow_ups?: boolean } 
-    }) =>
-      chatApi.sendMessage(message, conversationId, options),
-    onSuccess: (response, { conversationId }) => {
-      if (response.success) {
-        // Invalidate conversation to refresh messages
-        if (conversationId) {
-          queryClient.invalidateQueries({ queryKey: ['chat', 'conversation', conversationId] });
-        }
-        queryClient.invalidateQueries({ queryKey: ['chat', 'conversations'] });
-      }
-    },
-  });
-
-  // Send message (new conversation) mutation - same as above but without conversation ID
-  const sendMessageNewConversationMutation = useMutation({
-    mutationFn: (message: string) => chatApi.sendMessage(message),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['chat', 'conversations'] });
-    },
-  });
-
   // Delete conversation mutation
   const deleteConversationMutation = useMutation({
     mutationFn: (conversationId: string) => chatApi.deleteConversation(conversationId),
@@ -136,22 +110,81 @@ export const useChat = () => {
     // Mutations
     startIngestion: startIngestionMutation.mutate,
     createConversation: createConversationMutation.mutate,
-    sendMessage: sendMessageMutation.mutate,
-    sendMessageNewConversation: sendMessageNewConversationMutation.mutate,
     deleteConversation: deleteConversationMutation.mutate,
     updateConversationTitle: updateConversationTitleMutation.mutate,
 
     // Loading states
     isStartingIngestion: startIngestionMutation.isPending,
     isCreatingConversation: createConversationMutation.isPending,
-    isSendingMessage: sendMessageMutation.isPending,
-    isSendingMessageNewConversation: sendMessageNewConversationMutation.isPending,
     isDeletingConversation: deleteConversationMutation.isPending,
     isUpdatingTitle: updateConversationTitleMutation.isPending,
 
     // Mutation results
     startIngestionResult: startIngestionMutation.data,
-    sendMessageResult: sendMessageMutation.data,
-    sendMessageNewConversationResult: sendMessageNewConversationMutation.data,
+  };
+};
+
+/**
+ * Dedicated hook for sending chat messages.
+ *
+ * Uses per-call onSuccess/onError callbacks rather than watching mutation.data
+ * via useEffect. This is the canonical TanStack Query pattern for "fire and
+ * handle the result" flows: the callback receives the exact result for that
+ * specific call, eliminating stale-closure and reference-equality bugs that
+ * occur when an effect watches mutation.data across re-renders (e.g. when the
+ * chat is auto-triggered from a URL param during a parent phase transition).
+ *
+ * Returns a single sendChatMessage(...) that handles both new conversations
+ * (no conversationId) and existing ones.
+ */
+export interface SendChatMessageArgs {
+  message: string;
+  conversationId?: string;
+  options?: { search_limit?: number; include_follow_ups?: boolean };
+  onResult: (response: ChatResponse) => void;
+  onFailure: (errorMessage: string) => void;
+}
+
+export const useSendChatMessage = () => {
+  const queryClient = useQueryClient();
+
+  const mutation = useMutation<
+    ApiResponse<ChatResponse>,
+    Error,
+    SendChatMessageArgs
+  >({
+    mutationFn: ({ message, conversationId, options }: SendChatMessageArgs) =>
+      chatApi.sendMessage(message, conversationId, options),
+    onSuccess: (response, variables) => {
+      // The API wrapper never throws — it returns { success, data, error }.
+      // Branch on the wrapper result and route to the per-call callbacks.
+      if (response.success && response.data) {
+        if (variables.conversationId) {
+          queryClient.invalidateQueries({
+            queryKey: ['chat', 'conversation', variables.conversationId],
+          });
+        }
+        queryClient.invalidateQueries({ queryKey: ['chat', 'conversations'] });
+        variables.onResult(response.data);
+      } else {
+        variables.onFailure(
+          response.error?.message ||
+            'Something went wrong while processing your message.'
+        );
+      }
+    },
+    onError: (error, variables) => {
+      // Network failures, timeouts, or anything that rejected the promise.
+      variables.onFailure(
+        error?.message ||
+          'Something went wrong while processing your message.'
+      );
+    },
+  });
+
+  return {
+    sendChatMessage: mutation.mutate,
+    // Loading state is managed locally in the component via onResult/onFailure
+    // callbacks — mutation.isPending is not reliable for clearing the spinner.
   };
 };

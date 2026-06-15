@@ -56,6 +56,8 @@ export const chatApi = {
         conversation_id: conversationId,
         search_limit: options?.search_limit,
         include_follow_ups: options?.include_follow_ups,
+      }, {
+        timeout: 90000,  // 90 seconds — workout generation can take 20-30s
       })
     );
   },

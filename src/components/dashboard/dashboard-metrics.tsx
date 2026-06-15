@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Dumbbell, MessageCircle } from 'lucide-react';
+import { Dumbbell, MessageCircle, Sparkles, ArrowRight } from 'lucide-react';
 import { TrainingSnapshot } from '@/components/workouts/training-snapshot';
 import { useWorkouts } from '@/hooks/use-workouts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -40,10 +40,81 @@ export function DashboardMetrics() {
   const hasCycling = cycling && Object.values(cycling).some(Boolean);
   const hasZones = hasRunning || hasCycling;
 
+  const getCTAContent = () => {
+    if (!metrics) {
+      return {
+        message: "Ready for today's workout?",
+        subtext: "Let AI plan your training based on your data",
+        variant: "default" as const,
+        query: "What should I do today?",
+      };
+    }
+
+    const acr = metrics.acuteChronicRatio;
+    const daysSinceRest = metrics.daysSinceRestDay;
+
+    if (daysSinceRest !== null && daysSinceRest >= 7) {
+      return {
+        message: `It's been ${daysSinceRest} days since rest — let's check if you need recovery`,
+        subtext: "Your body adapts during rest, not during training",
+        variant: "warning" as const,
+        query: "Should I take a rest day?",
+      };
+    }
+    if (daysSinceRest !== null && daysSinceRest >= 5) {
+      return {
+        message: `${daysSinceRest} days since rest — shall we plan something easy?`,
+        subtext: "A recovery day could help you come back stronger",
+        variant: "warning" as const,
+        query: "Should I take a rest day?",
+      };
+    }
+    if (acr > 1.3) {
+      return {
+        message: "Your training load is high — let's plan carefully",
+        subtext: `ACR is ${acr.toFixed(2)} — recovery might be the best session today`,
+        variant: "warning" as const,
+        query: "My training load seems high, what should I do?",
+      };
+    }
+
+    return {
+      message: "What should I do today?",
+      subtext: `ACR ${acr.toFixed(2)} · ${metrics.hardSessions7Days} hard sessions this week · Let AI plan your workout`,
+      variant: "default" as const,
+      query: "What should I do today?",
+    };
+  };
+
+  const cta = getCTAContent();
+
   return (
     <div className="space-y-4">
       {/* Training snapshot */}
       <TrainingSnapshot />
+
+      {/* AI CTA card */}
+      <Card className={cta.variant === "warning" ? "border-amber-500/30 bg-amber-500/5" : "border-primary/30 bg-primary/5"}>
+        <CardContent className="flex items-center gap-4 py-4 px-5">
+          <div className={`h-10 w-10 rounded-full flex items-center justify-center shrink-0 ${cta.variant === "warning" ? "bg-amber-500/10" : "bg-primary/10"}`}>
+            <Sparkles className={`h-5 w-5 ${cta.variant === "warning" ? "text-amber-500" : "text-primary"}`} />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-semibold text-foreground">
+              {cta.message}
+            </p>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              {cta.subtext}
+            </p>
+          </div>
+          <Button asChild size="sm">
+            <Link href={`/chat?query=${encodeURIComponent(cta.query)}`}>
+              Let&apos;s go
+              <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
+            </Link>
+          </Button>
+        </CardContent>
+      </Card>
 
       {/* Quick links */}
       <div className="flex gap-3">
