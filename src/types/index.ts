@@ -354,3 +354,11 @@ export interface TrendData {
   days: number;
   dataPoints: TrendDataPoint[];
 }
+
+// Insights types
+export interface PostSyncInsight {
+  insight: string;
+  type: 'improvement' | 'concern' | 'pattern' | 'milestone' | 'tip';
+  generated_at: string;
+  cached: boolean;
+}

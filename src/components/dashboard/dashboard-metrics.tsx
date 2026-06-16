@@ -4,9 +4,11 @@ import Link from 'next/link';
 import { Dumbbell, MessageCircle, Sparkles, ArrowRight } from 'lucide-react';
 import { TrainingSnapshot } from '@/components/workouts/training-snapshot';
 import { useWorkouts } from '@/hooks/use-workouts';
+import { usePostSyncInsight } from '@/hooks/use-insights';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { AskAiLink } from '@/components/ui/ask-ai-link';
+import { InsightCard } from '@/components/dashboard/insight-card';
 
 function ZoneRow({ label, value }: { label: string; value?: string }) {
   if (!value) return null;
@@ -34,6 +36,7 @@ function SkeletonZoneRows() {
 export function DashboardMetrics() {
   const { useTrainingMetrics } = useWorkouts();
   const { data: metrics, isLoading } = useTrainingMetrics();
+  const { data: insight } = usePostSyncInsight();
 
   const running = metrics?.performanceMetrics?.running;
   const cycling = metrics?.performanceMetrics?.cycling;
@@ -93,6 +96,11 @@ export function DashboardMetrics() {
     <div className="space-y-4">
       {/* Training snapshot */}
       <TrainingSnapshot />
+
+      {/* Post-sync insight card */}
+      {insight && (
+        <InsightCard insight={insight.insight} type={insight.type} />
+      )}
 
       {/* AI CTA card */}
       <Card className={cta.variant === "warning" ? "border-amber-500/30 bg-amber-500/5" : "border-primary/30 bg-primary/5"}>
