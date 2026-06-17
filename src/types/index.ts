@@ -362,3 +362,16 @@ export interface PostSyncInsight {
   generated_at: string;
   cached: boolean;
 }
+
+export interface TrainingMilestone {
+  type: 'improvement' | 'consistency' | 'volume' | 'personal_best';
+  title: string;
+  description: string;
+  value: string | null;
+}
+
+export interface MilestonesResponse {
+  milestones: TrainingMilestone[];
+  generated_at: string;
+  cached: boolean;
+}

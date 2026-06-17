@@ -15,3 +15,18 @@ export const usePostSyncInsight = () => {
     retry: 1,
   });
 };
+
+export const useMilestones = () => {
+  return useQuery({
+    queryKey: ['insights', 'milestones'],
+    queryFn: async () => {
+      const response = await insightsApi.getMilestones();
+      if (response.success && response.data) {
+        return response.data;
+      }
+      throw new Error(response.error?.message || 'Failed to load milestones');
+    },
+    staleTime: 30 * 60 * 1000,
+    retry: 1,
+  });
+};

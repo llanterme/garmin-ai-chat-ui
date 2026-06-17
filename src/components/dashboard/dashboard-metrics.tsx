@@ -4,11 +4,12 @@ import Link from 'next/link';
 import { Dumbbell, MessageCircle, Sparkles, ArrowRight } from 'lucide-react';
 import { TrainingSnapshot } from '@/components/workouts/training-snapshot';
 import { useWorkouts } from '@/hooks/use-workouts';
-import { usePostSyncInsight } from '@/hooks/use-insights';
+import { usePostSyncInsight, useMilestones } from '@/hooks/use-insights';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { AskAiLink } from '@/components/ui/ask-ai-link';
 import { InsightCard } from '@/components/dashboard/insight-card';
+import { MilestonesCard } from '@/components/dashboard/milestones-card';
 
 function ZoneRow({ label, value }: { label: string; value?: string }) {
   if (!value) return null;
@@ -37,6 +38,7 @@ export function DashboardMetrics() {
   const { useTrainingMetrics } = useWorkouts();
   const { data: metrics, isLoading } = useTrainingMetrics();
   const { data: insight } = usePostSyncInsight();
+  const { data: milestonesData } = useMilestones();
 
   const running = metrics?.performanceMetrics?.running;
   const cycling = metrics?.performanceMetrics?.cycling;
@@ -100,6 +102,11 @@ export function DashboardMetrics() {
       {/* Post-sync insight card */}
       {insight && (
         <InsightCard insight={insight.insight} type={insight.type} />
+      )}
+
+      {/* Milestones card */}
+      {milestonesData && milestonesData.milestones.length > 0 && (
+        <MilestonesCard milestones={milestonesData.milestones} />
       )}
 
       {/* AI CTA card */}
