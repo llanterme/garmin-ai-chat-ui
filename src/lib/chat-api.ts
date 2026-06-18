@@ -5,6 +5,8 @@ import {
   ChatResponse,
   IngestionStatus,
   ApiResponse,
+  ConversationHistoryResponse,
+  ConversationDetail,
 } from '@/types';
 
 export const chatApi = {
@@ -86,5 +88,13 @@ export const chatApi = {
     return apiCall(
       apiClient.get<string[]>('/chat/suggestions')
     );
+  },
+
+  async getConversationHistory(page: number = 1, size: number = 20): Promise<ApiResponse<ConversationHistoryResponse>> {
+    return apiCall(apiClient.get<ConversationHistoryResponse>('/chat/history', { params: { page, size } }));
+  },
+
+  async getConversationMessages(conversationId: string): Promise<ApiResponse<ConversationDetail>> {
+    return apiCall(apiClient.get<ConversationDetail>(`/chat/conversations/${conversationId}`));
   },
 };
