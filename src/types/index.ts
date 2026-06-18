@@ -375,3 +375,30 @@ export interface MilestonesResponse {
   generated_at: string;
   cached: boolean;
 }
+
+export interface ConversationSummary {
+  conversation_id: string;
+  created_at: string;
+  updated_at: string;
+  message_count: number;
+  last_message: string | null;
+  last_message_role: string | null;
+  title?: string | null;
+}
+
+export interface ConversationHistoryResponse {
+  conversations: ConversationSummary[];
+  total: number;
+  page: number;
+  size: number;
+}
+
+export interface ConversationDetail {
+  conversation_id: string;
+  messages: Array<{
+    role: string;
+    content: string;
+    timestamp: string | null;
+  }>;
+  message_count: number;
+}

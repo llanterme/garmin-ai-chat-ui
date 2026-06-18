@@ -1,14 +1,15 @@
 'use client';
 
 import { useState } from 'react';
-import { Metadata } from 'next';
 import { Bot, MessageCircle, Database } from 'lucide-react';
 
 import { useChat } from '@/hooks/use-chat';
 import { useActivities } from '@/hooks/use-activities';
 import { IngestionStatus } from '@/components/chat/ingestion-status';
 import { ChatInterface } from '@/components/chat/chat-interface';
+import { RecentConversations } from '@/components/chat/recent-conversations';
 import { Card, CardContent } from '@/components/ui/card';
+import type { ChatMessage as ChatMessageType } from '@/types';
 
 enum ChatPhase {
   CHECKING_STATUS = 'checking_status',
@@ -18,6 +19,8 @@ enum ChatPhase {
 
 export default function ChatPage() {
   const [phase, setPhase] = useState<ChatPhase>(ChatPhase.CHECKING_STATUS);
+  const [activeConversationId, setActiveConversationId] = useState<string | undefined>(undefined);
+  const [loadedMessages, setLoadedMessages] = useState<ChatMessageType[]>([]);
   
   // Use activities endpoint to check if user has synced data instead of deprecated ingestion status
   const { useSyncStatus } = useActivities({ page: 1, limit: 1 });
@@ -40,6 +43,16 @@ export default function ChatPage() {
 
   const handleIngestionComplete = () => {
     setPhase(ChatPhase.CHAT_READY);
+  };
+
+  const handleSelectConversation = (conversationId: string, messages: ChatMessageType[]) => {
+    setActiveConversationId(conversationId);
+    setLoadedMessages(messages);
+  };
+
+  const handleNewConversation = () => {
+    setActiveConversationId(undefined);
+    setLoadedMessages([]);
   };
 
   if (currentPhase === ChatPhase.CHECKING_STATUS) {
@@ -108,20 +121,49 @@ export default function ChatPage() {
 
   // ChatPhase.CHAT_READY
   return (
-    <div className="max-w-6xl mx-auto h-[calc(100vh-180px)] flex flex-col min-h-0">
-      <div className="mb-6">
+    <div className="max-w-7xl mx-auto h-[calc(100vh-120px)] flex flex-col min-h-0">
+      {/* Header */}
+      <div className="mb-4 shrink-0">
         <h1 className="text-3xl font-bold text-foreground flex items-center gap-3">
           <MessageCircle className="h-8 w-8" />
           AI Chat
         </h1>
-        <p className="text-lg text-muted-foreground mt-2">
+        <p className="text-muted-foreground mt-1">
           Ask questions about your training data and get personalized insights.
         </p>
       </div>
 
-      <Card className="flex-1 flex flex-col overflow-hidden p-0 min-h-0">
-        <ChatInterface />
-      </Card>
+      {/* Mobile: horizontal pills above chat */}
+      <div className="lg:hidden shrink-0 mb-3 pb-2 border-b border-border/30">
+        <RecentConversations
+          onSelectConversation={handleSelectConversation}
+          onNewConversation={handleNewConversation}
+          activeConversationId={activeConversationId}
+          layout="pills"
+        />
+      </div>
+
+      {/* Desktop: sidebar + chat | Mobile: chat only */}
+      <div className="flex-1 flex gap-4 min-h-0">
+        {/* Desktop sidebar */}
+        <div className="hidden lg:flex lg:w-72 lg:shrink-0 lg:flex-col min-h-0">
+          <RecentConversations
+            onSelectConversation={handleSelectConversation}
+            onNewConversation={handleNewConversation}
+            activeConversationId={activeConversationId}
+            layout="sidebar"
+          />
+        </div>
+
+        {/* Chat card */}
+        <Card className="flex-1 flex flex-col overflow-hidden p-0 min-h-0">
+          <ChatInterface
+            key={activeConversationId || 'new'}
+            conversationId={activeConversationId}
+            initialMessages={loadedMessages}
+          />
+        </Card>
+      </div>
     </div>
   );
 }

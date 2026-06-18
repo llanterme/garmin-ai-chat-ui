@@ -165,6 +165,7 @@ export const useSendChatMessage = () => {
           });
         }
         queryClient.invalidateQueries({ queryKey: ['chat', 'conversations'] });
+        queryClient.invalidateQueries({ queryKey: ['chat', 'history'] });
         variables.onResult(response.data);
       } else {
         variables.onFailure(
@@ -187,4 +188,19 @@ export const useSendChatMessage = () => {
     // Loading state is managed locally in the component via onResult/onFailure
     // callbacks — mutation.isPending is not reliable for clearing the spinner.
   };
+};
+
+export const useConversationHistory = () => {
+  return useQuery({
+    queryKey: ['chat', 'history'],
+    queryFn: async () => {
+      const response = await chatApi.getConversationHistory(1, 20);
+      if (response.success && response.data) {
+        return response.data;
+      }
+      throw new Error(response.error?.message || 'Failed to load conversations');
+    },
+    staleTime: 60 * 1000,
+    retry: 1,
+  });
 };
