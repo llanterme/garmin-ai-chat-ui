@@ -85,8 +85,8 @@ export function TrainingSnapshot() {
   const restDays = metrics.daysSinceRestDay;
   const restDaysColor =
     restDays === null ? '' :
-    restDays >= 7 ? 'text-red-500' :
-    restDays >= 5 ? 'text-amber-500' : '';
+    restDays >= 5 ? 'text-red-500' :
+    restDays >= 3 ? 'text-amber-500' : '';
 
   return (
     <Card>
@@ -122,7 +122,7 @@ export function TrainingSnapshot() {
 
           {/* Days since rest */}
           <div className="flex-1 min-w-[80px]">
-            <MetricCell label="Since Rest" askQuery={restDays !== null ? `It's been ${restDays} days since my last rest day. Should I rest?` : undefined}>
+            <MetricCell label="Since Rest" askQuery={restDays !== null ? (restDays === 0 ? `I trained today. Do I need a rest day soon?` : `I've been resting for ${restDays} consecutive days. Should I get back to training?`) : undefined}>
               <span className={cn('text-3xl font-bold font-display tabular-nums leading-none', restDaysColor)}>
                 {restDays === null ? '—' : `${restDays}d`}
               </span>
