@@ -20,6 +20,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ActivityTypeIcon, getActivityTypeColor } from '@/components/ui/activity-type-icon';
+import { AIAnalysisCard } from '@/components/activities/ai-analysis-card';
 import { cn } from '@/lib/utils';
 import { Activity } from '@/types';
 
@@ -144,14 +145,14 @@ export default function ActivityDetailPage({ params }: ActivityDetailPageProps) 
                 <div className="text-sm text-muted-foreground">Distance</div>
               </div>
             )}
-            
+
             <div className="text-center">
               <div className="text-3xl font-bold text-primary mb-2">
                 {activity.normalized?.duration_formatted || `${Math.floor(activity.duration / 60)}:${String(Math.floor(activity.duration % 60)).padStart(2, '0')}`}
               </div>
               <div className="text-sm text-muted-foreground">Duration</div>
             </div>
-            
+
             {activity.average_speed > 0 && (
               <div className="text-center">
                 <div className="text-3xl font-bold text-primary mb-2">
@@ -171,7 +172,7 @@ export default function ActivityDetailPage({ params }: ActivityDetailPageProps) 
                 </div>
               </div>
             )}
-            
+
             {activity.calories > 0 && (
               <div className="text-center">
                 <div className="text-3xl font-bold text-primary mb-2">
@@ -183,6 +184,13 @@ export default function ActivityDetailPage({ params }: ActivityDetailPageProps) 
           </div>
         </CardContent>
       </Card>
+
+      {/* AI Training Analysis */}
+      <AIAnalysisCard
+        activityId={activityId}
+        activityName={activity.activity_name || 'Untitled Activity'}
+        activityDate={activity.start_time}
+      />
 
       {/* Detailed Metrics */}
       <div className="grid md:grid-cols-2 gap-6">

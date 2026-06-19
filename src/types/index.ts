@@ -402,3 +402,12 @@ export interface ConversationDetail {
   }>;
   message_count: number;
 }
+
+export interface ActivityAnalysis {
+  analysis: string;
+  trainingStimulus: string;   // camelCase to match Java response (was training_stimulus)
+  effortLevel: string;        // camelCase to match Java response (was effort_level)
+  activity_id: string;        // Python sets this, stays snake_case
+  cached: boolean;            // Python sets this, stays snake_case
+  error?: string | null;      // Optional error field
+}
