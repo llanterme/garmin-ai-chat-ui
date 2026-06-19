@@ -6,6 +6,7 @@ import {
   PaginationParams,
   SortParams,
   ApiResponse,
+  ActivityAnalysis,
 } from '@/types';
 
 interface GetActivitiesParams extends PaginationParams, Partial<SortParams> {
@@ -83,8 +84,8 @@ export const activitiesApi = {
     mostRecentActivity: Activity | null;
   }>> {
     return apiCall(
-      apiClient.get<ActivityListResponse>('/activities/', { 
-        params: { page: 1, page_size: 1 } 
+      apiClient.get<ActivityListResponse>('/activities/', {
+        params: { page: 1, page_size: 1 }
       })
     ).then(response => {
       if (response.success && response.data) {
@@ -107,5 +108,12 @@ export const activitiesApi = {
         error: response.error
       };
     });
+  },
+
+  // Get AI-generated analysis for an activity
+  async getActivityAnalysis(activityId: string): Promise<ApiResponse<ActivityAnalysis>> {
+    return apiCall(
+      apiClient.get<ActivityAnalysis>(`/activities/${activityId}/analysis`)
+    );
   },
 };

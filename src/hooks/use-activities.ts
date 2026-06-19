@@ -101,12 +101,12 @@ export const useActivities = (params: UseActivitiesParams) => {
     totalPages: activitiesQuery.data?.pages || 1,
     hasNext: activitiesQuery.data?.has_next || false,
     hasPrev: activitiesQuery.data?.has_prev || false,
-    
+
     // Query states
     isLoading: activitiesQuery.isLoading,
     error: activitiesQuery.error,
     isError: activitiesQuery.isError,
-    
+
     // Refetch function
     refetch: activitiesQuery.refetch,
 
@@ -115,9 +115,27 @@ export const useActivities = (params: UseActivitiesParams) => {
     useActivityStats,
     useActivityTypes,
     useSyncStatus, // NEW: Replaces ingestion status check
+    useActivityAnalysis, // NEW: AI analysis hook
 
     // Mutations
     deleteActivity: deleteActivityMutation.mutate,
     isDeleting: deleteActivityMutation.isPending,
   };
+};
+
+// Hook for fetching AI-generated activity analysis
+export const useActivityAnalysis = (activityId: string) => {
+  return useQuery({
+    queryKey: ['activities', activityId, 'analysis'],
+    queryFn: async () => {
+      const response = await activitiesApi.getActivityAnalysis(activityId);
+      if (response.success && response.data) {
+        return response.data;
+      }
+      throw new Error(response.error?.message || 'Failed to load analysis');
+    },
+    enabled: !!activityId,
+    staleTime: 30 * 60 * 1000,  // 30 minutes — analysis is stable per activity
+    retry: 1,
+  });
 };
