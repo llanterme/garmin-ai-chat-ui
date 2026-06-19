@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import Link from 'next/link';
 import { format } from 'date-fns';
 import {
@@ -182,8 +182,10 @@ interface ActivitiesListProps {
 export function ActivitiesList({ initialFilters = {}, limit = 10 }: ActivitiesListProps) {
   const [page, setPage] = useState(1);
   const [filters, setFilters] = useState<ActivityFilters>(initialFilters);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');           // For input value (immediate)
+  const [debouncedSearch, setDebouncedSearch] = useState('');   // For API query (debounced)
   const [showFilters, setShowFilters] = useState(false);
+  const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const {
     activities,
@@ -202,15 +204,21 @@ export function ActivitiesList({ initialFilters = {}, limit = 10 }: ActivitiesLi
     limit,
     filters: {
       ...filters,
-      search: searchQuery || undefined,
+      search: debouncedSearch || undefined,  // Use debounced value
     },
   });
 
   const { data: activityTypes } = useActivityTypes();
 
   const handleSearch = (query: string) => {
-    setSearchQuery(query);
-    setPage(1); // Reset to first page when searching
+    setSearchQuery(query);  // Update input immediately for responsive typing
+
+    // Debounce the actual API call
+    if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
+    searchTimeoutRef.current = setTimeout(() => {
+      setDebouncedSearch(query);
+      setPage(1);  // Reset to page 1 when search changes
+    }, 300);  // 300ms debounce
   };
 
   const handleFilterChange = (newFilters: Partial<ActivityFilters>) => {
@@ -218,73 +226,9 @@ export function ActivitiesList({ initialFilters = {}, limit = 10 }: ActivitiesLi
     setPage(1); // Reset to first page when filtering
   };
 
-  if (isLoading) {
-    return (
-      <div className="space-y-4">
-        {[...Array(3)].map((_, i) => (
-          <Card key={i}>
-            <CardContent className="p-6">
-              <div className="animate-pulse space-y-4">
-                <div className="flex items-center gap-3">
-                  <div className="h-12 w-12 bg-muted rounded-lg"></div>
-                  <div className="space-y-2">
-                    <div className="h-4 bg-muted rounded w-48"></div>
-                    <div className="h-3 bg-muted rounded w-32"></div>
-                  </div>
-                </div>
-                <div className="grid grid-cols-4 gap-4">
-                  {[...Array(4)].map((_, j) => (
-                    <div key={j} className="text-center space-y-2">
-                      <div className="h-6 bg-muted rounded"></div>
-                      <div className="h-3 bg-muted rounded"></div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <Card>
-        <CardContent className="p-6 text-center">
-          <div className="text-destructive mb-2">Failed to load activities</div>
-          <p className="text-sm text-muted-foreground">
-            Please try again later or check your connection.
-          </p>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  if (activities.length === 0) {
-    return (
-      <Card>
-        <CardContent className="p-6 text-center">
-          <ActivityTypeIcon activityType="fitness" className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-          <h3 className="text-lg font-medium mb-2">No activities found</h3>
-          <p className="text-sm text-muted-foreground mb-4">
-            {searchQuery || Object.keys(filters).length > 0
-              ? 'Try adjusting your search or filters.'
-              : 'Sync your activities from Garmin Connect to see them here.'}
-          </p>
-          {!searchQuery && Object.keys(filters).length === 0 && (
-            <Button asChild>
-              <Link href="/sync">Sync Activities</Link>
-            </Button>
-          )}
-        </CardContent>
-      </Card>
-    );
-  }
-
   return (
     <div className="space-y-6">
-      {/* Search and Filters */}
+      {/* Search and Filters - ALWAYS rendered */}
       <div className="space-y-4">
         <div className="flex gap-2">
           <div className="relative flex-1">
@@ -326,7 +270,7 @@ export function ActivitiesList({ initialFilters = {}, limit = 10 }: ActivitiesLi
                     ))}
                   </select>
                 </div>
-                
+
                 <div>
                   <label className="text-sm font-medium mb-2 block">From Date</label>
                   <Input
@@ -335,7 +279,7 @@ export function ActivitiesList({ initialFilters = {}, limit = 10 }: ActivitiesLi
                     onChange={(e) => handleFilterChange({ dateFrom: e.target.value || undefined })}
                   />
                 </div>
-                
+
                 <div>
                   <label className="text-sm font-medium mb-2 block">To Date</label>
                   <Input
@@ -345,7 +289,7 @@ export function ActivitiesList({ initialFilters = {}, limit = 10 }: ActivitiesLi
                   />
                 </div>
               </div>
-              
+
               <div className="flex gap-2 mt-4">
                 <Button
                   variant="outline"
@@ -353,6 +297,7 @@ export function ActivitiesList({ initialFilters = {}, limit = 10 }: ActivitiesLi
                   onClick={() => {
                     setFilters({});
                     setSearchQuery('');
+                    setDebouncedSearch('');
                   }}
                 >
                   Clear All
@@ -366,48 +311,107 @@ export function ActivitiesList({ initialFilters = {}, limit = 10 }: ActivitiesLi
       {/* Results Summary */}
       <div className="flex items-center justify-between">
         <p className="text-sm text-muted-foreground">
-          Showing {activities.length} of {totalActivities} activities
+          {isLoading ? 'Searching...' : `Showing ${activities.length} of ${totalActivities} activities`}
         </p>
-        <p className="text-sm text-muted-foreground">
-          Page {currentPage} of {totalPages}
-        </p>
-      </div>
-
-      {/* Activities Grid */}
-      <div className="grid gap-6">
-        {activities.map((activity) => (
-          <ActivityCard
-            key={activity.id}
-            activity={activity}
-            onDelete={deleteActivity}
-            isDeleting={isDeleting}
-          />
-        ))}
-      </div>
-
-      {/* Pagination */}
-      {totalPages > 1 && (
-        <div className="flex justify-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setPage(Math.max(1, page - 1))}
-            disabled={!hasPrev}
-          >
-            Previous
-          </Button>
-          <span className="flex items-center px-3 text-sm text-muted-foreground">
+        {!isLoading && totalPages > 0 && (
+          <p className="text-sm text-muted-foreground">
             Page {currentPage} of {totalPages}
-          </span>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setPage(Math.min(totalPages, page + 1))}
-            disabled={!hasNext}
-          >
-            Next
-          </Button>
+          </p>
+        )}
+      </div>
+
+      {/* Content area - loading / error / empty / results */}
+      {isLoading ? (
+        <div className="space-y-4">
+          {[...Array(3)].map((_, i) => (
+            <Card key={i}>
+              <CardContent className="p-6">
+                <div className="animate-pulse space-y-4">
+                  <div className="flex items-center gap-3">
+                    <div className="h-12 w-12 bg-muted rounded-lg" />
+                    <div className="space-y-2">
+                      <div className="h-4 bg-muted rounded w-48" />
+                      <div className="h-3 bg-muted rounded w-32" />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-4 gap-4">
+                    {[...Array(4)].map((_, j) => (
+                      <div key={j} className="text-center space-y-2">
+                        <div className="h-6 bg-muted rounded" />
+                        <div className="h-3 bg-muted rounded" />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
         </div>
+      ) : error ? (
+        <Card>
+          <CardContent className="p-6 text-center">
+            <div className="text-destructive mb-2">Failed to load activities</div>
+            <p className="text-sm text-muted-foreground">
+              Please try again later or check your connection.
+            </p>
+          </CardContent>
+        </Card>
+      ) : activities.length === 0 ? (
+        <Card>
+          <CardContent className="p-6 text-center">
+            <ActivityTypeIcon activityType="fitness" className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+            <h3 className="text-lg font-medium mb-2">No activities found</h3>
+            <p className="text-sm text-muted-foreground mb-4">
+              {searchQuery || Object.keys(filters).length > 0
+                ? 'Try adjusting your search or filters.'
+                : 'Sync your activities from Garmin Connect to see them here.'}
+            </p>
+            {!searchQuery && Object.keys(filters).length === 0 && (
+              <Button asChild>
+                <Link href="/sync">Sync Activities</Link>
+              </Button>
+            )}
+          </CardContent>
+        </Card>
+      ) : (
+        <>
+          {/* Activities Grid */}
+          <div className="grid gap-6">
+            {activities.map((activity) => (
+              <ActivityCard
+                key={activity.id}
+                activity={activity}
+                onDelete={deleteActivity}
+                isDeleting={isDeleting}
+              />
+            ))}
+          </div>
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="flex justify-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setPage(Math.max(1, page - 1))}
+                disabled={!hasPrev}
+              >
+                Previous
+              </Button>
+              <span className="flex items-center px-3 text-sm text-muted-foreground">
+                Page {currentPage} of {totalPages}
+              </span>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setPage(Math.min(totalPages, page + 1))}
+                disabled={!hasNext}
+              >
+                Next
+              </Button>
+            </div>
+          )}
+        </>
       )}
     </div>
   );

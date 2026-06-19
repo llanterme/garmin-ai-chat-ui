@@ -120,9 +120,15 @@ export function TrainingSnapshot() {
 
           {divider}
 
-          {/* Days since rest */}
+          {/* Days since activity */}
           <div className="flex-1 min-w-[80px]">
-            <MetricCell label="Since Rest" askQuery={restDays !== null ? (restDays === 0 ? `I trained today. Do I need a rest day soon?` : `I've been resting for ${restDays} consecutive days. Should I get back to training?`) : undefined}>
+            <MetricCell label="Since Activity" askQuery={restDays !== null ? (
+              restDays === 0
+                ? "I trained today. Do I need a rest day soon?"
+                : restDays <= 2
+                ? `I've had ${restDays} rest day${restDays > 1 ? 's' : ''}. Should I train today?`
+                : `I've been resting for ${restDays} consecutive days. When should I get back to training and what should I start with?`
+            ) : undefined}>
               <span className={cn('text-3xl font-bold font-display tabular-nums leading-none', restDaysColor)}>
                 {restDays === null ? '—' : `${restDays}d`}
               </span>

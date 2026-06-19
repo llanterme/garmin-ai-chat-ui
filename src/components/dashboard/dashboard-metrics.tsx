@@ -61,7 +61,7 @@ export function DashboardMetrics() {
 
     if (daysSinceRest !== null && daysSinceRest >= 7) {
       return {
-        message: `It's been ${daysSinceRest} days since rest — let's check if you need recovery`,
+        message: `It's been ${daysSinceRest} days since your last activity — let's check if you need recovery`,
         subtext: "Your body adapts during rest, not during training",
         variant: "warning" as const,
         query: "Should I take a rest day?",
@@ -69,7 +69,7 @@ export function DashboardMetrics() {
     }
     if (daysSinceRest !== null && daysSinceRest >= 5) {
       return {
-        message: `${daysSinceRest} days since rest — shall we plan something easy?`,
+        message: `${daysSinceRest} days since your last activity — shall we plan something easy?`,
         subtext: "A recovery day could help you come back stronger",
         variant: "warning" as const,
         query: "Should I take a rest day?",
@@ -84,9 +84,15 @@ export function DashboardMetrics() {
       };
     }
 
+    const restText = daysSinceRest === null
+      ? ''
+      : daysSinceRest === 0
+        ? 'Trained today'
+        : `${daysSinceRest}d since last activity`;
+
     return {
       message: "What should I do today?",
-      subtext: `ACR ${acr.toFixed(2)} · ${metrics.hardSessions7Days} hard sessions this week · Let AI plan your workout`,
+      subtext: `ACR ${acr.toFixed(2)} · ${metrics.hardSessions7Days} hard sessions this week · ${restText} · Let AI plan your workout`,
       variant: "default" as const,
       query: "What should I do today?",
     };
