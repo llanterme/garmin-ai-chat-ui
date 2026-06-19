@@ -139,3 +139,18 @@ export const useActivityAnalysis = (activityId: string) => {
     retry: 1,
   });
 };
+
+// Hook for fetching activities summary statistics
+export const useActivitiesSummary = () => {
+  return useQuery({
+    queryKey: ['activities', 'summary'],
+    queryFn: async () => {
+      const response = await activitiesApi.getActivitiesSummary();
+      if (response.success && response.data) {
+        return response.data;
+      }
+      throw new Error(response.error?.message || 'Failed to load summary');
+    },
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+};

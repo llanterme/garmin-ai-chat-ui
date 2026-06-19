@@ -7,6 +7,7 @@ import {
   SortParams,
   ApiResponse,
   ActivityAnalysis,
+  ActivitiesSummary,
 } from '@/types';
 
 interface GetActivitiesParams extends PaginationParams, Partial<SortParams> {
@@ -20,6 +21,9 @@ export const activitiesApi = {
       page: params.page,
       size: params.limit, // Backend uses 'size' not 'limit'
       activity_type: params.filters?.activityType, // Match backend parameter name
+      search: params.filters?.search, // Search parameter
+      date_from: params.filters?.dateFrom, // Date range filters
+      date_to: params.filters?.dateTo,
       // Note: Backend doesn't seem to support sorting based on Swagger
     };
 
@@ -114,6 +118,13 @@ export const activitiesApi = {
   async getActivityAnalysis(activityId: string): Promise<ApiResponse<ActivityAnalysis>> {
     return apiCall(
       apiClient.get<ActivityAnalysis>(`/activities/${activityId}/analysis`)
+    );
+  },
+
+  // Get activities summary statistics
+  async getActivitiesSummary(): Promise<ApiResponse<ActivitiesSummary>> {
+    return apiCall(
+      apiClient.get<ActivitiesSummary>('/activities/summary')
     );
   },
 };

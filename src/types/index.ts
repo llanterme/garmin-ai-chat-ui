@@ -90,6 +90,13 @@ export interface ActivityListResponse {
   has_prev: boolean;
 }
 
+export interface ActivitiesSummary {
+  total_activities: number;
+  total_distance_km: number;
+  total_duration_hours: number;
+  total_calories: number;
+}
+
 // Sync types - Updated for unified sync + ingestion flow
 export interface SyncRequest {
   days?: number; // Number of days to sync (1-365)
